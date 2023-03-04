@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  server:
+    container_name: server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    tty: true
+    depends_on:
+      - db
+    env_file:
+      - ./db/.env
+    volumes:
+      - ./server:/go/src
+    ports:
+      - 8080:8080
+
+  db:
+    container_name: db
+    image: mysql:8.0
+    env_file:
+      - ./db/.env
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306

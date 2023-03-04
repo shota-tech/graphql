@@ -19,7 +19,7 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTod
 		Done:   false,
 		UserID: input.UserID,
 	}
-	if err := r.TodoRepository.Create(ctx, todo); err != nil {
+	if err := r.TodoRepository.Store(ctx, todo); err != nil {
 		return nil, err
 	}
 	return todo, nil
