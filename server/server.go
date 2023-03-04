@@ -21,8 +21,10 @@ func main() {
 
 	// DI
 	todoRepository := repository.NewTodoRepository()
+	userRepository := repository.NewUserRepository()
 	resolver := &graph.Resolver{
 		TodoRepository: todoRepository,
+		UserRepository: userRepository,
 	}
 
 	// start server

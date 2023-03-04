@@ -6,23 +6,18 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/rs/xid"
 	"github.com/shota-tech/graphql/server/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	user := &model.User{
-		ID:   input.UserID,
-		Name: fmt.Sprintf("user %s", input.UserID),
-	}
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTodoInput) (*model.Todo, error) {
 	todo := &model.Todo{
-		ID:   xid.New().String(),
-		Text: input.Text,
-		Done: false,
-		User: user,
+		ID:     xid.New().String(),
+		Text:   input.Text,
+		Done:   false,
+		UserID: input.UserID,
 	}
 	if err := r.TodoRepository.Create(ctx, todo); err != nil {
 		return nil, err
@@ -30,9 +25,31 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 	return todo, nil
 }
 
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
+	user := &model.User{
+		ID:   xid.New().String(),
+		Name: input.Name,
+	}
+	if err := r.UserRepository.Store(ctx, user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	return r.TodoRepository.List(ctx)
+}
+
+// User is the resolver for the user field.
+func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
+	return r.UserRepository.Get(ctx, id)
+}
+
+// User is the resolver for the user field.
+func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+	return r.UserRepository.Get(ctx, obj.UserID)
 }
 
 // Mutation returns MutationResolver implementation.
@@ -41,5 +58,9 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Todo returns TodoResolver implementation.
+func (r *Resolver) Todo() TodoResolver { return &todoResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type todoResolver struct{ *Resolver }
