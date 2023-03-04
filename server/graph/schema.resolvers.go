@@ -8,17 +8,31 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rs/xid"
 	"github.com/shota-tech/graphql/server/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+	user := &model.User{
+		ID:   input.UserID,
+		Name: fmt.Sprintf("user %s", input.UserID),
+	}
+	todo := &model.Todo{
+		ID:   xid.New().String(),
+		Text: input.Text,
+		Done: false,
+		User: user,
+	}
+	if err := r.TodoRepository.Create(ctx, todo); err != nil {
+		return nil, err
+	}
+	return todo, nil
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+	return r.TodoRepository.List(ctx)
 }
 
 // Mutation returns MutationResolver implementation.
