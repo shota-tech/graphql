@@ -25,23 +25,13 @@ func NewTodoRepository(db *sql.DB) *TodoRepository {
 func (r *TodoRepository) Store(ctx context.Context, todo *model.Todo) error {
 	query := "INSERT INTO todos (id, text, done, user_id) VALUES (?, ?, ?, ?) " +
 		"ON DUPLICATE KEY UPDATE text = VALUES(text), done = VALUES(done), user_id = VALUES(user_id);"
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx, todo.ID, todo.Text, todo.Done, todo.UserID)
+	_, err := r.db.ExecContext(ctx, query, todo.ID, todo.Text, todo.Done, todo.UserID)
 	return err
 }
 
 func (r *TodoRepository) List(ctx context.Context) ([]*model.Todo, error) {
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, text, done, user_id FROM todos;")
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryContext(ctx)
+	query := "SELECT id, text, done, user_id FROM todos;"
+	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

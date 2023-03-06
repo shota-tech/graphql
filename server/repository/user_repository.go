@@ -25,24 +25,14 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) Store(ctx context.Context, user *model.User) error {
 	query := "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name);"
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	_, err = stmt.ExecContext(ctx, user.ID, user.Name)
+	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name)
 	return err
 }
 
 func (r *UserRepository) Get(ctx context.Context, id string) (*model.User, error) {
 	user := &model.User{}
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, name FROM users WHERE id = ?;")
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	if err := stmt.QueryRowContext(ctx, id).Scan(&user.ID, &user.Name); err != nil {
+	query := "SELECT id, name FROM users WHERE id = ?;"
+	if err := r.db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("user %s not found", id)
 		}
