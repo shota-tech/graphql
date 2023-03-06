@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/shota-tech/graphql/server/graph/model"
@@ -24,6 +25,9 @@ func NewTodoRepository(db *sql.DB) *TodoRepository {
 }
 
 func (r *TodoRepository) Store(ctx context.Context, todo *model.Todo) error {
+	if todo == nil {
+		return errors.New("todo is required")
+	}
 	query := "INSERT INTO todos (id, text, done, user_id) VALUES (?, ?, ?, ?) " +
 		"ON DUPLICATE KEY UPDATE text = VALUES(text), done = VALUES(done), user_id = VALUES(user_id);"
 	_, err := r.db.ExecContext(ctx, query, todo.ID, todo.Text, todo.Done, todo.UserID)

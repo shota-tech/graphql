@@ -25,6 +25,9 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 }
 
 func (r *UserRepository) Store(ctx context.Context, user *model.User) error {
+	if user == nil {
+		return errors.New("user is required")
+	}
 	query := "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name);"
 	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name)
 	if err != nil {
