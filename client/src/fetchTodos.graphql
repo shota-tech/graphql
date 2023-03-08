@@ -1,0 +1,11 @@
+query fetchTodos {
+  todos {
+    id
+    text
+    done
+    user {
+      id
+      name
+    }
+  }
+}
