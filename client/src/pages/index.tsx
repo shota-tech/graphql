@@ -53,7 +53,7 @@ export default function Home() {
     if (parent == 'TODO') {
       setTodoTasks(todoTasks.filter((value) => value.id !== task.id))
     } else if (parent === 'IN PROGRESS') {
-      setDoneTasks(inProgressTasks.filter((value) => value.id !== task.id))
+      setInProgressTasks(inProgressTasks.filter((value) => value.id !== task.id))
     } else if (parent === 'DONE') {
       setDoneTasks(doneTasks.filter((value) => value.id !== task.id))
     }
