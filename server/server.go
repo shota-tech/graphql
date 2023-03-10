@@ -43,9 +43,6 @@ func main() {
 		log.Fatalf("failed to connect db: %v", err)
 	}
 	defer db.Close()
-	if err := db.Ping(); err != nil {
-		log.Fatalf("failed to connect db: %v", err)
-	}
 
 	// DI
 	todoRepository := repository.NewTodoRepository(db)
