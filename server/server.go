@@ -45,10 +45,10 @@ func main() {
 	defer db.Close()
 
 	// DI
-	todoRepository := repository.NewTodoRepository(db)
+	taskRepository := repository.NewTaskRepository(db)
 	userRepository := repository.NewUserRepository(db)
 	resolver := &graph.Resolver{
-		TodoRepository: todoRepository,
+		TaskRepository: taskRepository,
 		UserRepository: userRepository,
 	}
 

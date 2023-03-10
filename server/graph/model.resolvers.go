@@ -11,11 +11,11 @@ import (
 )
 
 // User is the resolver for the user field.
-func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
+func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, error) {
 	return r.UserRepository.Get(ctx, obj.UserID)
 }
 
-// Todo returns TodoResolver implementation.
-func (r *Resolver) Todo() TodoResolver { return &todoResolver{r} }
+// Task returns TaskResolver implementation.
+func (r *Resolver) Task() TaskResolver { return &taskResolver{r} }
 
-type todoResolver struct{ *Resolver }
+type taskResolver struct{ *Resolver }

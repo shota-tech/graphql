@@ -1,8 +1,14 @@
-type Todo {
+type Task {
   id: ID!
   text: String!
-  done: Boolean!
+  status: Status!
   user: User!
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  DONE
 }
 
 type User {

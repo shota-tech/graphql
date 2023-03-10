@@ -7,6 +7,6 @@ import "github.com/shota-tech/graphql/server/repository"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	TodoRepository repository.ITodoRepository
+	TaskRepository repository.ITaskRepository
 	UserRepository repository.IUserRepository
 }

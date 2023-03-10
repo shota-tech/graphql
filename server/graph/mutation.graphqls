@@ -1,4 +1,4 @@
-input CreateTodoInput {
+input CreateTaskInput {
   text: String!
   userId: String!
 }
@@ -8,6 +8,6 @@ input CreateUserInput {
 }
 
 type Mutation {
-  createTodo(input: CreateTodoInput!): Todo!
+  createTask(input: CreateTaskInput!): Task!
   createUser(input: CreateUserInput!): User!
 }

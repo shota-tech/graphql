@@ -10,13 +10,13 @@ import (
 	"github.com/shota-tech/graphql/server/graph/model"
 )
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.TodoRepository.List(ctx)
+// FetchTasks is the resolver for the fetchTasks field.
+func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
+	return r.TaskRepository.List(ctx)
 }
 
-// User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
+// FetchUser is the resolver for the fetchUser field.
+func (r *queryResolver) FetchUser(ctx context.Context, id string) (*model.User, error) {
 	return r.UserRepository.Get(ctx, id)
 }
 

@@ -11,18 +11,18 @@ import (
 	"github.com/shota-tech/graphql/server/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTodoInput) (*model.Todo, error) {
-	todo := &model.Todo{
+// CreateTask is the resolver for the createTask field.
+func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error) {
+	task := &model.Task{
 		ID:     xid.New().String(),
 		Text:   input.Text,
-		Done:   false,
+		Status: model.StatusTodo,
 		UserID: input.UserID,
 	}
-	if err := r.TodoRepository.Store(ctx, todo); err != nil {
+	if err := r.TaskRepository.Store(ctx, task); err != nil {
 		return nil, err
 	}
-	return todo, nil
+	return task, nil
 }
 
 // CreateUser is the resolver for the createUser field.
