@@ -1,12 +1,12 @@
 import { FC } from 'react'
 import { Heading, VStack } from '@chakra-ui/react'
 import { useDroppable } from '@dnd-kit/core'
-import { Todo } from '@/graphql/generated'
+import { Task } from '@/graphql/generated'
 import { Card } from '.'
 
 type Props = {
   title: string
-  tasks: Todo[]
+  tasks: Task[]
 }
 
 export const List: FC<Props> = ({ title, tasks }) => {

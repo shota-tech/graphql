@@ -1,8 +1,8 @@
-mutation createTodo($text: String!, $userId: String!) {
-  createTodo(input: { text: $text, userId: $userId }) {
+mutation createTask($text: String!, $userId: String!) {
+  createTask(input: { text: $text, userId: $userId }) {
     id
     text
-    done
+    status
     user {
       id
     }

@@ -15,7 +15,7 @@ export type Scalars = {
   Float: number;
 };
 
-export type CreateTodoInput = {
+export type CreateTaskInput = {
   text: Scalars['String'];
   userId: Scalars['String'];
 };
@@ -26,13 +26,13 @@ export type CreateUserInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  createTodo: Todo;
+  createTask: Task;
   createUser: User;
 };
 
 
-export type MutationCreateTodoArgs = {
-  input: CreateTodoInput;
+export type MutationCreateTaskArgs = {
+  input: CreateTaskInput;
 };
 
 
@@ -42,19 +42,25 @@ export type MutationCreateUserArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  todos: Array<Todo>;
-  user?: Maybe<User>;
+  fetchTasks: Array<Task>;
+  fetchUser?: Maybe<User>;
 };
 
 
-export type QueryUserArgs = {
+export type QueryFetchUserArgs = {
   id: Scalars['ID'];
 };
 
-export type Todo = {
-  __typename?: 'Todo';
-  done: Scalars['Boolean'];
+export enum Status {
+  Done = 'DONE',
+  InProgress = 'IN_PROGRESS',
+  Todo = 'TODO'
+}
+
+export type Task = {
+  __typename?: 'Task';
   id: Scalars['ID'];
+  status: Status;
   text: Scalars['String'];
   user: User;
 };
@@ -65,13 +71,13 @@ export type User = {
   name: Scalars['String'];
 };
 
-export type CreateTodoMutationVariables = Exact<{
+export type CreateTaskMutationVariables = Exact<{
   text: Scalars['String'];
   userId: Scalars['String'];
 }>;
 
 
-export type CreateTodoMutation = { __typename?: 'Mutation', createTodo: { __typename?: 'Todo', id: string, text: string, done: boolean, user: { __typename?: 'User', id: string } } };
+export type CreateTaskMutation = { __typename?: 'Mutation', createTask: { __typename?: 'Task', id: string, text: string, status: Status, user: { __typename?: 'User', id: string } } };
 
 export type CreateUserMutationVariables = Exact<{
   name: Scalars['String'];
@@ -80,25 +86,25 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, name: string } };
 
-export type FetchTodosQueryVariables = Exact<{ [key: string]: never; }>;
+export type FetchTasksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FetchTodosQuery = { __typename?: 'Query', todos: Array<{ __typename?: 'Todo', id: string, text: string, done: boolean, user: { __typename?: 'User', id: string, name: string } }> };
+export type FetchTasksQuery = { __typename?: 'Query', fetchTasks: Array<{ __typename?: 'Task', id: string, text: string, status: Status, user: { __typename?: 'User', id: string, name: string } }> };
 
 export type FetchUserQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type FetchUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, name: string } | null };
+export type FetchUserQuery = { __typename?: 'Query', fetchUser?: { __typename?: 'User', id: string, name: string } | null };
 
 
-export const CreateTodoDocument = gql`
-    mutation createTodo($text: String!, $userId: String!) {
-  createTodo(input: {text: $text, userId: $userId}) {
+export const CreateTaskDocument = gql`
+    mutation createTask($text: String!, $userId: String!) {
+  createTask(input: {text: $text, userId: $userId}) {
     id
     text
-    done
+    status
     user {
       id
     }
@@ -106,8 +112,8 @@ export const CreateTodoDocument = gql`
 }
     `;
 
-export function useCreateTodoMutation() {
-  return Urql.useMutation<CreateTodoMutation, CreateTodoMutationVariables>(CreateTodoDocument);
+export function useCreateTaskMutation() {
+  return Urql.useMutation<CreateTaskMutation, CreateTaskMutationVariables>(CreateTaskDocument);
 };
 export const CreateUserDocument = gql`
     mutation createUser($name: String!) {
@@ -121,12 +127,12 @@ export const CreateUserDocument = gql`
 export function useCreateUserMutation() {
   return Urql.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument);
 };
-export const FetchTodosDocument = gql`
-    query fetchTodos {
-  todos {
+export const FetchTasksDocument = gql`
+    query fetchTasks {
+  fetchTasks {
     id
     text
-    done
+    status
     user {
       id
       name
@@ -135,12 +141,12 @@ export const FetchTodosDocument = gql`
 }
     `;
 
-export function useFetchTodosQuery(options?: Omit<Urql.UseQueryArgs<FetchTodosQueryVariables>, 'query'>) {
-  return Urql.useQuery<FetchTodosQuery, FetchTodosQueryVariables>({ query: FetchTodosDocument, ...options });
+export function useFetchTasksQuery(options?: Omit<Urql.UseQueryArgs<FetchTasksQueryVariables>, 'query'>) {
+  return Urql.useQuery<FetchTasksQuery, FetchTasksQueryVariables>({ query: FetchTasksDocument, ...options });
 };
 export const FetchUserDocument = gql`
     query fetchUser($id: ID!) {
-  user(id: $id) {
+  fetchUser(id: $id) {
     id
     name
   }

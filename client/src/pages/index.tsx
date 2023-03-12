@@ -2,26 +2,27 @@ import { ChangeEvent, useState, useEffect } from 'react'
 import { IconButton, Input, HStack, VStack } from '@chakra-ui/react'
 import { AddIcon } from '@chakra-ui/icons'
 import { DragEndEvent } from '@dnd-kit/core'
-import { Todo, useFetchTodosQuery, useCreateTodoMutation } from '@/graphql/generated'
+import { Task, Status, useFetchTasksQuery, useCreateTaskMutation } from '@/graphql/generated'
 import { Board } from '@/components'
 
 const userId = 'cg1ltn51nm6u7l352ma0'
 
 export default function Home() {
   const [text, setText] = useState('')
-  const [todoTasks, setTodoTasks] = useState<Todo[]>([])
-  const [inProgressTasks, setInProgressTasks] = useState<Todo[]>([])
-  const [doneTasks, setDoneTasks] = useState<Todo[]>([])
-  const [fetchTodosResult] = useFetchTodosQuery()
-  const [_, createTodo] = useCreateTodoMutation()
-  const { data, fetching, error } = fetchTodosResult
+  const [todoTasks, setTodoTasks] = useState<Task[]>([])
+  const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
+  const [doneTasks, setDoneTasks] = useState<Task[]>([])
+  const [fetchTasksResult] = useFetchTasksQuery()
+  const [_, createTask] = useCreateTaskMutation()
+  const { data, fetching, error } = fetchTasksResult
 
   useEffect(() => {
     if (!data) {
       return
     }
-    setTodoTasks(data.todos.filter((todo) => !todo.done))
-    setDoneTasks(data.todos.filter((todo) => todo.done))
+    setTodoTasks(data.fetchTasks.filter((task) => task.status === Status.Todo))
+    setInProgressTasks(data.fetchTasks.filter((task) => task.status === Status.InProgress))
+    setDoneTasks(data.fetchTasks.filter((task) => task.status === Status.Done))
   }, [data])
 
   if (fetching) return <p>Loading...</p>
@@ -35,7 +36,7 @@ export default function Home() {
     if (!text) {
       return
     }
-    createTodo({ text: text, userId: userId }).then((result) => {
+    createTask({ text: text, userId: userId }).then((result) => {
       if (result.error) {
         console.error('Oh no!', result.error)
       }
@@ -72,7 +73,7 @@ export default function Home() {
         <Input bg='gray.50' value={text} onChange={handleChange} />
         <IconButton
           colorScheme='teal'
-          aria-label='add todo'
+          aria-label='add task'
           onClick={handleClick}
           icon={<AddIcon />}
         />

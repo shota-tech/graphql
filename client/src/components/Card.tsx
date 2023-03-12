@@ -2,11 +2,11 @@ import { FC } from 'react'
 import { Text, VStack } from '@chakra-ui/react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Todo } from '@/graphql/generated'
+import { Task } from '@/graphql/generated'
 
 type Props = {
   parent: string
-  task: Todo
+  task: Task
 }
 
 export const Card: FC<Props> = ({ parent, task }) => {

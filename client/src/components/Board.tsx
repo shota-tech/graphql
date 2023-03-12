@@ -1,14 +1,14 @@
 import { FC } from 'react'
 import { HStack } from '@chakra-ui/react'
 import { DndContext, rectIntersection, DragEndEvent } from '@dnd-kit/core'
-import { Todo } from '@/graphql/generated'
+import { Task } from '@/graphql/generated'
 import { List } from '.'
 
 type Props = {
   onDragEnd: (e: DragEndEvent) => void
-  todoTasks: Todo[]
-  inProgressTasks: Todo[]
-  doneTasks: Todo[]
+  todoTasks: Task[]
+  inProgressTasks: Task[]
+  doneTasks: Task[]
 }
 
 export const Board: FC<Props> = ({ onDragEnd, todoTasks, inProgressTasks, doneTasks }) => {
