@@ -11,8 +11,8 @@ import (
 )
 
 // FetchTasks is the resolver for the fetchTasks field.
-func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
-	return r.TaskRepository.List(ctx)
+func (r *queryResolver) FetchTasks(ctx context.Context, userID string) ([]*model.Task, error) {
+	return r.TaskRepository.ListByUserID(ctx, userID)
 }
 
 // FetchUser is the resolver for the fetchUser field.

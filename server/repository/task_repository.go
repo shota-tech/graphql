@@ -12,7 +12,7 @@ import (
 type (
 	ITaskRepository interface {
 		Store(context.Context, *model.Task) error
-		List(context.Context) ([]*model.Task, error)
+		ListByUserID(context.Context, string) ([]*model.Task, error)
 	}
 
 	TaskRepository struct {
@@ -37,9 +37,9 @@ func (r *TaskRepository) Store(ctx context.Context, task *model.Task) error {
 	return nil
 }
 
-func (r *TaskRepository) List(ctx context.Context) ([]*model.Task, error) {
-	query := "SELECT id, text, status, user_id FROM tasks;"
-	rows, err := r.db.QueryContext(ctx, query)
+func (r *TaskRepository) ListByUserID(ctx context.Context, userID string) ([]*model.Task, error) {
+	query := "SELECT id, text, status, user_id FROM tasks WHERE user_id = ?;"
+	rows, err := r.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}

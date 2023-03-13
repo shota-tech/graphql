@@ -52,7 +52,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		FetchTasks func(childComplexity int) int
+		FetchTasks func(childComplexity int, userID string) int
 		FetchUser  func(childComplexity int, id string) int
 	}
 
@@ -74,7 +74,7 @@ type MutationResolver interface {
 	CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error)
 }
 type QueryResolver interface {
-	FetchTasks(ctx context.Context) ([]*model.Task, error)
+	FetchTasks(ctx context.Context, userID string) ([]*model.Task, error)
 	FetchUser(ctx context.Context, id string) (*model.User, error)
 }
 type TaskResolver interface {
@@ -125,7 +125,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.FetchTasks(childComplexity), true
+		args, err := ec.field_Query_fetchTasks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FetchTasks(childComplexity, args["userId"].(string)), true
 
 	case "Query.fetchUser":
 		if e.complexity.Query.FetchUser == nil {
@@ -314,6 +319,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_fetchTasks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
 	return args, nil
 }
 
@@ -508,7 +528,7 @@ func (ec *executionContext) _Query_fetchTasks(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FetchTasks(rctx)
+		return ec.resolvers.Query().FetchTasks(rctx, fc.Args["userId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -543,6 +563,17 @@ func (ec *executionContext) fieldContext_Query_fetchTasks(ctx context.Context, f
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_fetchTasks_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
