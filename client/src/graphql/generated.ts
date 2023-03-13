@@ -17,7 +17,7 @@ export type Scalars = {
 
 export type CreateTaskInput = {
   text: Scalars['String'];
-  userId: Scalars['String'];
+  userId: Scalars['ID'];
 };
 
 export type CreateUserInput = {
@@ -47,6 +47,11 @@ export type Query = {
 };
 
 
+export type QueryFetchTasksArgs = {
+  userId: Scalars['ID'];
+};
+
+
 export type QueryFetchUserArgs = {
   id: Scalars['ID'];
 };
@@ -73,7 +78,7 @@ export type User = {
 
 export type CreateTaskMutationVariables = Exact<{
   text: Scalars['String'];
-  userId: Scalars['String'];
+  userId: Scalars['ID'];
 }>;
 
 
@@ -86,7 +91,9 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, name: string } };
 
-export type FetchTasksQueryVariables = Exact<{ [key: string]: never; }>;
+export type FetchTasksQueryVariables = Exact<{
+  userId: Scalars['ID'];
+}>;
 
 
 export type FetchTasksQuery = { __typename?: 'Query', fetchTasks: Array<{ __typename?: 'Task', id: string, text: string, status: Status, user: { __typename?: 'User', id: string, name: string } }> };
@@ -100,7 +107,7 @@ export type FetchUserQuery = { __typename?: 'Query', fetchUser?: { __typename?: 
 
 
 export const CreateTaskDocument = gql`
-    mutation createTask($text: String!, $userId: String!) {
+    mutation createTask($text: String!, $userId: ID!) {
   createTask(input: {text: $text, userId: $userId}) {
     id
     text
@@ -128,8 +135,8 @@ export function useCreateUserMutation() {
   return Urql.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument);
 };
 export const FetchTasksDocument = gql`
-    query fetchTasks {
-  fetchTasks {
+    query fetchTasks($userId: ID!) {
+  fetchTasks(userId: $userId) {
     id
     text
     status
@@ -141,7 +148,7 @@ export const FetchTasksDocument = gql`
 }
     `;
 
-export function useFetchTasksQuery(options?: Omit<Urql.UseQueryArgs<FetchTasksQueryVariables>, 'query'>) {
+export function useFetchTasksQuery(options: Omit<Urql.UseQueryArgs<FetchTasksQueryVariables>, 'query'>) {
   return Urql.useQuery<FetchTasksQuery, FetchTasksQueryVariables>({ query: FetchTasksDocument, ...options });
 };
 export const FetchUserDocument = gql`

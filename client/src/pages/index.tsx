@@ -12,7 +12,7 @@ export default function Home() {
   const [todoTasks, setTodoTasks] = useState<Task[]>([])
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
   const [doneTasks, setDoneTasks] = useState<Task[]>([])
-  const [fetchTasksResult] = useFetchTasksQuery()
+  const [fetchTasksResult] = useFetchTasksQuery({ variables: { userId: userId } })
   const [_, createTask] = useCreateTaskMutation()
   const { data, fetching, error } = fetchTasksResult
 
