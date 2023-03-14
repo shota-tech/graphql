@@ -37,6 +37,7 @@ func TestTaskRepository_Store(t *testing.T) {
 			assertErr: assert.NoError,
 		},
 		"task is nil": {
+			setup:     nil,
 			task:      nil,
 			assertErr: assert.Error,
 		},
@@ -76,6 +77,87 @@ func TestTaskRepository_Store(t *testing.T) {
 	}
 }
 
+func TestTaskRepository_Get(t *testing.T) {
+	tests := map[string]struct {
+		setup     func(sqlmock.Sqlmock)
+		id        string
+		want      *model.Task
+		assertErr assert.ErrorAssertionFunc
+	}{
+		"happy path": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
+				row := sqlmock.NewRows([]string{"id", "text", "status", "user_id"}).
+					AddRow("cg1m0bd1nm6u7kpjp15g", "task1", "TODO", "cg1ltn51nm6u7l352ma0")
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1m0bd1nm6u7kpjp15g").
+					WillReturnRows(row)
+			},
+			id: "cg1m0bd1nm6u7kpjp15g",
+			want: &model.Task{
+				ID:     "cg1m0bd1nm6u7kpjp15g",
+				Text:   "task1",
+				Status: model.StatusTodo,
+				UserID: "cg1ltn51nm6u7l352ma0",
+			},
+			assertErr: assert.NoError,
+		},
+		"record not found": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
+				row := sqlmock.NewRows([]string{"id", "text", "status", "user_id"})
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1m0bd1nm6u7kpjp15g").
+					WillReturnRows(row)
+			},
+			id:        "cg1m0bd1nm6u7kpjp15g",
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to get record": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1m0bd1nm6u7kpjp15g").
+					WillReturnError(assert.AnError)
+			},
+			id:        "cg1m0bd1nm6u7kpjp15g",
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan record": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
+				row := sqlmock.NewRows([]string{"id", "text", "status", "user_id"}).
+					AddRow("cg1m0bd1nm6u7kpjp15g", nil, "TODO", "cg1ltn51nm6u7l352ma0")
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1m0bd1nm6u7kpjp15g").
+					WillReturnRows(row)
+			},
+			id:        "cg1m0bd1nm6u7kpjp15g",
+			want:      nil,
+			assertErr: assert.Error,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// setup sqlmock
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+			if tt.setup != nil {
+				tt.setup(mock)
+			}
+			// test
+			sut := repository.NewTaskRepository(db)
+			got, err := sut.Get(context.Background(), tt.id)
+			assert.Equal(t, tt.want, got)
+			tt.assertErr(t, err)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
 func TestTaskRepository_ListByUserID(t *testing.T) {
 	tests := map[string]struct {
 		setup     func(sqlmock.Sqlmock)
@@ -90,7 +172,9 @@ func TestTaskRepository_ListByUserID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "text", "status", "user_id"}).
 					AddRow("cg1m0bd1nm6u7kpjp15g", "task1", "TODO", "cg1ltn51nm6u7l352ma0").
 					AddRow("cg2j6hl1nm6ivqd084m0", "task2", "TODO", "cg1ltn51nm6u7l352ma0")
-				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(args...).WillReturnRows(rows)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
 			},
 			userID: "cg1ltn51nm6u7l352ma0",
 			want: []*model.Task{
@@ -104,7 +188,9 @@ func TestTaskRepository_ListByUserID(t *testing.T) {
 				query := "SELECT id, text, status, user_id FROM tasks WHERE user_id = ?;"
 				args := []driver.Value{"cg1ltn51nm6u7l352ma0"}
 				rows := sqlmock.NewRows([]string{"id", "text", "status", "user_id"})
-				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(args...).WillReturnRows(rows)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
 			},
 			userID:    "cg1ltn51nm6u7l352ma0",
 			want:      []*model.Task{},
@@ -114,7 +200,9 @@ func TestTaskRepository_ListByUserID(t *testing.T) {
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "SELECT id, text, status, user_id FROM tasks WHERE user_id = ?;"
 				args := []driver.Value{"cg1ltn51nm6u7l352ma0"}
-				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(args...).WillReturnError(assert.AnError)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnError(assert.AnError)
 			},
 			userID:    "cg1ltn51nm6u7l352ma0",
 			want:      nil,
@@ -127,7 +215,9 @@ func TestTaskRepository_ListByUserID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "text", "status", "user_id"}).
 					AddRow("cg1m0bd1nm6u7kpjp15g", "task1", "TODO", "cg1ltn51nm6u7l352ma0").
 					AddRow("cg2j6hl1nm6ivqd084m0", nil, "TODO", "cg1ltn51nm6u7l352ma0")
-				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(args...).WillReturnRows(rows)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
 			},
 			userID:    "cg1ltn51nm6u7l352ma0",
 			want:      nil,
@@ -141,7 +231,9 @@ func TestTaskRepository_ListByUserID(t *testing.T) {
 					AddRow("cg1m0bd1nm6u7kpjp15g", "task1", "TODO", "cg1ltn51nm6u7l352ma0").
 					AddRow("cg2j6hl1nm6ivqd084m0", "task2", "TODO", "cg1ltn51nm6u7l352ma0").
 					RowError(1, assert.AnError)
-				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(args...).WillReturnRows(rows)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
 			},
 			userID:    "cg1ltn51nm6u7l352ma0",
 			want:      nil,

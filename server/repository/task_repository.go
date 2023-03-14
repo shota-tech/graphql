@@ -12,6 +12,7 @@ import (
 type (
 	ITaskRepository interface {
 		Store(context.Context, *model.Task) error
+		Get(context.Context, string) (*model.Task, error)
 		ListByUserID(context.Context, string) ([]*model.Task, error)
 	}
 
@@ -35,6 +36,19 @@ func (r *TaskRepository) Store(ctx context.Context, task *model.Task) error {
 		return fmt.Errorf("failed to upsert record: %w", err)
 	}
 	return nil
+}
+
+func (r *TaskRepository) Get(ctx context.Context, id string) (*model.Task, error) {
+	task := &model.Task{}
+	query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Text, &task.Status, &task.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("record not found")
+		}
+		return nil, fmt.Errorf("failed to get record: %w", err)
+	}
+	return task, nil
 }
 
 func (r *TaskRepository) ListByUserID(ctx context.Context, userID string) ([]*model.Task, error) {

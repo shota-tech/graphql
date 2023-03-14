@@ -3,11 +3,18 @@ input CreateTaskInput {
   userId: ID!
 }
 
+input UpdateTaskInput {
+  id: ID!
+  text: String
+  status: Status
+}
+
 input CreateUserInput {
   name: String!
 }
 
 type Mutation {
   createTask(input: CreateTaskInput!): Task!
+  updateTask(input: UpdateTaskInput): Task!
   createUser(input: CreateUserInput!): User!
 }

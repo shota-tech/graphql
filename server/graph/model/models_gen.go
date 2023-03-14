@@ -17,6 +17,12 @@ type CreateUserInput struct {
 	Name string `json:"name"`
 }
 
+type UpdateTaskInput struct {
+	ID     string  `json:"id"`
+	Text   *string `json:"text"`
+	Status *Status `json:"status"`
+}
+
 type User struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`

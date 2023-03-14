@@ -25,6 +25,24 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 	return task, nil
 }
 
+// UpdateTask is the resolver for the updateTask field.
+func (r *mutationResolver) UpdateTask(ctx context.Context, input *model.UpdateTaskInput) (*model.Task, error) {
+	task, err := r.TaskRepository.Get(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	if input.Text != nil {
+		task.Text = *input.Text
+	}
+	if input.Status != nil {
+		task.Status = *input.Status
+	}
+	if err := r.TaskRepository.Store(ctx, task); err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
 	user := &model.User{
