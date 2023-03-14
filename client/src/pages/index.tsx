@@ -2,7 +2,13 @@ import { ChangeEvent, useState, useEffect } from 'react'
 import { IconButton, Input, HStack, VStack } from '@chakra-ui/react'
 import { AddIcon } from '@chakra-ui/icons'
 import { DragEndEvent } from '@dnd-kit/core'
-import { Task, Status, useFetchTasksQuery, useCreateTaskMutation } from '@/graphql/generated'
+import {
+  Task,
+  Status,
+  useFetchTasksQuery,
+  useCreateTaskMutation,
+  useUpdateTaskMutation,
+} from '@/graphql/generated'
 import { Board } from '@/components'
 
 const userId = 'cg1ltn51nm6u7l352ma0'
@@ -13,7 +19,8 @@ export default function Home() {
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
   const [doneTasks, setDoneTasks] = useState<Task[]>([])
   const [fetchTasksResult] = useFetchTasksQuery({ variables: { userId: userId } })
-  const [_, createTask] = useCreateTaskMutation()
+  const [, createTask] = useCreateTaskMutation()
+  const [, updateTask] = useUpdateTaskMutation()
   const { data, fetching, error } = fetchTasksResult
 
   useEffect(() => {
@@ -45,26 +52,34 @@ export default function Home() {
   }
 
   const handleDragEnd = (e: DragEndEvent) => {
-    const container = e.over?.id
-    const parent = e.active.data.current?.parent ?? ''
+    const newParent = e.over?.id ?? ''
+    const oldParent = e.active.data.current?.parent ?? ''
     const task = e.active.data.current?.task ?? null
-    if (container === parent) {
+    if (newParent === oldParent) {
       return
     }
-    if (parent == 'TODO') {
+    if (oldParent == 'TODO') {
       setTodoTasks(todoTasks.filter((value) => value.id !== task.id))
-    } else if (parent === 'IN PROGRESS') {
+    } else if (oldParent === 'IN PROGRESS') {
       setInProgressTasks(inProgressTasks.filter((value) => value.id !== task.id))
-    } else if (parent === 'DONE') {
+    } else if (oldParent === 'DONE') {
       setDoneTasks(doneTasks.filter((value) => value.id !== task.id))
     }
-    if (container === 'TODO') {
+    let newStatus = Status.Todo
+    if (newParent === 'TODO') {
       setTodoTasks([...todoTasks, task])
-    } else if (container === 'IN PROGRESS') {
+    } else if (newParent === 'IN PROGRESS') {
+      newStatus = Status.InProgress
       setInProgressTasks([...inProgressTasks, task])
-    } else if (container === 'DONE') {
+    } else if (newParent === 'DONE') {
+      newStatus = Status.Done
       setDoneTasks([...doneTasks, task])
     }
+    updateTask({ id: task.id, status: newStatus }).then((result) => {
+      if (result.error) {
+        console.error('Oh no!', result.error)
+      }
+    })
   }
 
   return (

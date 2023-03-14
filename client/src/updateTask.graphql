@@ -1,0 +1,10 @@
+mutation updateTask($id: ID!, $text: String, $status: Status) {
+  updateTask(input: { id: $id, text: $text, status: $status }) {
+    id
+    text
+    status
+    user {
+      id
+    }
+  }
+}

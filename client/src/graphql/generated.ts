@@ -28,6 +28,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createTask: Task;
   createUser: User;
+  updateTask: Task;
 };
 
 
@@ -38,6 +39,11 @@ export type MutationCreateTaskArgs = {
 
 export type MutationCreateUserArgs = {
   input: CreateUserInput;
+};
+
+
+export type MutationUpdateTaskArgs = {
+  input?: InputMaybe<UpdateTaskInput>;
 };
 
 export type Query = {
@@ -68,6 +74,12 @@ export type Task = {
   status: Status;
   text: Scalars['String'];
   user: User;
+};
+
+export type UpdateTaskInput = {
+  id: Scalars['ID'];
+  status?: InputMaybe<Status>;
+  text?: InputMaybe<Scalars['String']>;
 };
 
 export type User = {
@@ -104,6 +116,15 @@ export type FetchUserQueryVariables = Exact<{
 
 
 export type FetchUserQuery = { __typename?: 'Query', fetchUser?: { __typename?: 'User', id: string, name: string } | null };
+
+export type UpdateTaskMutationVariables = Exact<{
+  id: Scalars['ID'];
+  text?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Status>;
+}>;
+
+
+export type UpdateTaskMutation = { __typename?: 'Mutation', updateTask: { __typename?: 'Task', id: string, text: string, status: Status, user: { __typename?: 'User', id: string } } };
 
 
 export const CreateTaskDocument = gql`
@@ -162,4 +183,20 @@ export const FetchUserDocument = gql`
 
 export function useFetchUserQuery(options: Omit<Urql.UseQueryArgs<FetchUserQueryVariables>, 'query'>) {
   return Urql.useQuery<FetchUserQuery, FetchUserQueryVariables>({ query: FetchUserDocument, ...options });
+};
+export const UpdateTaskDocument = gql`
+    mutation updateTask($id: ID!, $text: String, $status: Status) {
+  updateTask(input: {id: $id, text: $text, status: $status}) {
+    id
+    text
+    status
+    user {
+      id
+    }
+  }
+}
+    `;
+
+export function useUpdateTaskMutation() {
+  return Urql.useMutation<UpdateTaskMutation, UpdateTaskMutationVariables>(UpdateTaskDocument);
 };
