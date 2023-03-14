@@ -15,15 +15,11 @@ import (
 
 func TestUserRepository_Store(t *testing.T) {
 	tests := map[string]struct {
-		user      *model.User
 		setup     func(sqlmock.Sqlmock)
+		user      *model.User
 		assertErr assert.ErrorAssertionFunc
 	}{
 		"happy path": {
-			user: &model.User{
-				ID:   "cg1ltn51nm6u7l352ma0",
-				Name: "user1",
-			},
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name);"
 				args := []driver.Value{"cg1ltn51nm6u7l352ma0", "user1"}
@@ -31,23 +27,28 @@ func TestUserRepository_Store(t *testing.T) {
 					WithArgs(args...).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
-			assertErr: assert.NoError,
-		},
-		"user is nil": {
-			user:      nil,
-			assertErr: assert.Error,
-		},
-		"failed to upsert record": {
 			user: &model.User{
 				ID:   "cg1ltn51nm6u7l352ma0",
 				Name: "user1",
 			},
+			assertErr: assert.NoError,
+		},
+		"user is nil": {
+			user:      nil,
+			setup:     nil,
+			assertErr: assert.Error,
+		},
+		"failed to upsert record": {
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name);"
 				args := []driver.Value{"cg1ltn51nm6u7l352ma0", "user1"}
 				mock.ExpectExec(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnError(assert.AnError)
+			},
+			user: &model.User{
+				ID:   "cg1ltn51nm6u7l352ma0",
+				Name: "user1",
 			},
 			assertErr: assert.Error,
 		},
@@ -72,41 +73,57 @@ func TestUserRepository_Store(t *testing.T) {
 
 func TestUserRepository_Get(t *testing.T) {
 	tests := map[string]struct {
-		id        string
 		setup     func(sqlmock.Sqlmock)
+		id        string
 		want      *model.User
 		assertErr assert.ErrorAssertionFunc
 	}{
 		"happy path": {
-			id: "cg1ltn51nm6u7l352ma0",
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "SELECT id, name FROM users WHERE id = ?;"
 				row := sqlmock.NewRows([]string{"id", "name"}).
 					AddRow("cg1ltn51nm6u7l352ma0", "user1")
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1ltn51nm6u7l352ma0").
 					WillReturnRows(row)
 			},
+			id:        "cg1ltn51nm6u7l352ma0",
 			want:      &model.User{ID: "cg1ltn51nm6u7l352ma0", Name: "user1"},
 			assertErr: assert.NoError,
 		},
 		"record not found": {
-			id: "cg1ltn51nm6u7l352ma0",
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "SELECT id, name FROM users WHERE id = ?;"
 				row := sqlmock.NewRows([]string{"id", "name"})
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1ltn51nm6u7l352ma0").
 					WillReturnRows(row)
 			},
+			id:        "cg1ltn51nm6u7l352ma0",
 			want:      nil,
 			assertErr: assert.Error,
 		},
 		"failed to get record": {
-			id: "cg1ltn51nm6u7l352ma0",
 			setup: func(mock sqlmock.Sqlmock) {
 				query := "SELECT id, name FROM users WHERE id = ?;"
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1ltn51nm6u7l352ma0").
 					WillReturnError(assert.AnError)
 			},
+			id:        "cg1ltn51nm6u7l352ma0",
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan record": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id = ?;"
+				row := sqlmock.NewRows([]string{"id", "name"}).
+					AddRow("cg1ltn51nm6u7l352ma0", nil)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs("cg1ltn51nm6u7l352ma0").
+					WillReturnRows(row)
+			},
+			id:        "cg1ltn51nm6u7l352ma0",
 			want:      nil,
 			assertErr: assert.Error,
 		},
