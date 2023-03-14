@@ -39,11 +39,12 @@ func (r *UserRepository) Store(ctx context.Context, user *model.User) error {
 func (r *UserRepository) Get(ctx context.Context, id string) (*model.User, error) {
 	user := &model.User{}
 	query := "SELECT id, name FROM users WHERE id = ?;"
-	if err := r.db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name); err != nil {
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("record not found")
 		}
-		return nil, fmt.Errorf("failed to get records: %w", err)
+		return nil, fmt.Errorf("failed to get record: %w", err)
 	}
 	return user, nil
 }
