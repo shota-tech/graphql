@@ -1,3 +1,6 @@
 export * from './Board'
 export * from './Card'
 export * from './List'
+export * from './Header'
+export * from './LoginButton'
+export * from './LogoutButton'

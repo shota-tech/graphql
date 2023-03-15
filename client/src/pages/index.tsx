@@ -1,4 +1,5 @@
 import { ChangeEvent, useState, useEffect } from 'react'
+import { withAuthenticationRequired } from '@auth0/auth0-react'
 import { IconButton, Input, HStack, VStack } from '@chakra-ui/react'
 import { AddIcon } from '@chakra-ui/icons'
 import { DragEndEvent } from '@dnd-kit/core'
@@ -13,7 +14,7 @@ import { Board } from '@/components'
 
 const userId = 'cg1ltn51nm6u7l352ma0'
 
-export default function Home() {
+const Home = () => {
   const [text, setText] = useState('')
   const [todoTasks, setTodoTasks] = useState<Task[]>([])
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
@@ -102,3 +103,5 @@ export default function Home() {
     </VStack>
   )
 }
+
+export default withAuthenticationRequired(Home)
