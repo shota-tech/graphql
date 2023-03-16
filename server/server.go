@@ -9,8 +9,10 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi/v5"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-sql-driver/mysql"
-	"github.com/rs/cors"
 	"github.com/shota-tech/graphql/server/graph"
 	"github.com/shota-tech/graphql/server/repository"
 )
@@ -52,12 +54,22 @@ func main() {
 		UserRepository: userRepository,
 	}
 
-	// start server
+	// setup router
+	router := chi.NewRouter()
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	router.Group(func(router chi.Router) {
+		router.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"http://localhost:3000"},
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			AllowCredentials: true,
+		}))
+		router.Use(chiMiddleware.AllowContentType("application/json"))
+		router.Handle("/graphql", srv)
+	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", cors.Default().Handler(srv))
-
+	// start server
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
