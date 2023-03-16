@@ -6,7 +6,7 @@ import { BASE_URL, AUTH0_DOMAIN, AUTH0_CLIENT_ID } from '@/config/constants'
 import { Header } from '@/components'
 
 const client = createClient({
-  url: 'http://localhost:8080/query',
+  url: 'http://localhost:8080/graphql',
 })
 
 const App = ({ Component, pageProps }: AppProps) => {
