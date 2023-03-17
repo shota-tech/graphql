@@ -1,11 +1,10 @@
-# カンバンボード
+# Kanban Board
 
-## 概要
-- カンバン方式のタスク管理アプリ。
-- GraphQL の学習用プロジェクト。
+A Kanban board created for learning GraphQL.
 
-## 学んだこと
-- GraphQL の仕組み。
-- gqlgen を用いた GraphQL サーバーの実装方法。
-- urql を用いた GraphQL クライアントの実装方法。
-- dnd kit を用いたドラッグ&ドロップの実装方法。
+## What I learned
+- What is GraphQL.
+- How to define GraphQL schema.
+- How to implement GraphQL server using gqlgen.
+- How to implement GraphQL client using urql.
+- How to implement drag and drop using dnd kit.
