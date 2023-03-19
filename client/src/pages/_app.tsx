@@ -1,13 +1,8 @@
 import type { AppProps } from 'next/app'
 import { Auth0Provider } from '@auth0/auth0-react'
 import { ChakraProvider, Box, Container } from '@chakra-ui/react'
-import { createClient, Provider } from 'urql'
-import { BASE_URL, AUTH0_DOMAIN, AUTH0_CLIENT_ID } from '@/config/constants'
-import { Header } from '@/components'
-
-const client = createClient({
-  url: 'http://localhost:8080/graphql',
-})
+import { BASE_URL, AUTH0_DOMAIN, AUTH0_CLIENT_ID, API_URL } from '@/config/constants'
+import { AuthorizedUrqlProvider, Header } from '@/components'
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
@@ -16,10 +11,11 @@ const App = ({ Component, pageProps }: AppProps) => {
       clientId={AUTH0_CLIENT_ID}
       authorizationParams={{
         redirect_uri: BASE_URL,
+        audience: API_URL,
       }}
     >
       <ChakraProvider>
-        <Provider value={client}>
+        <AuthorizedUrqlProvider>
           <Box minH='100vh' bg='gray.50'>
             <Header />
             <Box as='main'>
@@ -28,7 +24,7 @@ const App = ({ Component, pageProps }: AppProps) => {
               </Container>
             </Box>
           </Box>
-        </Provider>
+        </AuthorizedUrqlProvider>
       </ChakraProvider>
     </Auth0Provider>
   )
