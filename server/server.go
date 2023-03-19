@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-sql-driver/mysql"
 	"github.com/shota-tech/graphql/server/graph"
+	"github.com/shota-tech/graphql/server/middleware"
 	"github.com/shota-tech/graphql/server/repository"
 )
 
@@ -53,21 +54,19 @@ func main() {
 		TaskRepository: taskRepository,
 		UserRepository: userRepository,
 	}
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
 	// setup router
 	router := chi.NewRouter()
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
+	router.Use(chiMiddleware.AllowContentType("application/json"))
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials: true,
+	}))
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	router.Group(func(router chi.Router) {
-		router.Use(cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"http://localhost:3000"},
-			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-			AllowCredentials: true,
-		}))
-		router.Use(chiMiddleware.AllowContentType("application/json"))
-		router.Handle("/graphql", srv)
-	})
+	router.With(middleware.EnsureValidToken()).Handle("/graphql", srv)
 
 	// start server
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
