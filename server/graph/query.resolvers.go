@@ -6,12 +6,21 @@ package graph
 
 import (
 	"context"
+	"errors"
 
+	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/shota-tech/graphql/server/graph/model"
+	"github.com/shota-tech/graphql/server/middleware"
 )
 
 // FetchTasks is the resolver for the fetchTasks field.
 func (r *queryResolver) FetchTasks(ctx context.Context, userID string) ([]*model.Task, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(middleware.CustomClaims)
+	if claims.HasScope(middleware.ScopeReadTasks) {
+		return nil, errors.New("invalid scope")
+	}
 	return r.TaskRepository.ListByUserID(ctx, userID)
 }
 

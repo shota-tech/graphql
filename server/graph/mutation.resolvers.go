@@ -6,13 +6,22 @@ package graph
 
 import (
 	"context"
+	"errors"
 
+	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/rs/xid"
 	"github.com/shota-tech/graphql/server/graph/model"
+	"github.com/shota-tech/graphql/server/middleware"
 )
 
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(middleware.CustomClaims)
+	if claims.HasScope(middleware.ScopeWriteTasks) {
+		return nil, errors.New("invalid scope")
+	}
 	task := &model.Task{
 		ID:     xid.New().String(),
 		Text:   input.Text,
@@ -27,6 +36,11 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 
 // UpdateTask is the resolver for the updateTask field.
 func (r *mutationResolver) UpdateTask(ctx context.Context, input *model.UpdateTaskInput) (*model.Task, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(middleware.CustomClaims)
+	if claims.HasScope(middleware.ScopeWriteTasks) {
+		return nil, errors.New("invalid scope")
+	}
 	task, err := r.TaskRepository.Get(ctx, input.ID)
 	if err != nil {
 		return nil, err
