@@ -17,8 +17,8 @@ import (
 // FetchTasks is the resolver for the fetchTasks field.
 func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
 	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(middleware.CustomClaims)
-	if claims.HasScope(middleware.ScopeReadTasks) {
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.TaskRepository.ListByUserID(ctx, token.RegisteredClaims.Subject)
