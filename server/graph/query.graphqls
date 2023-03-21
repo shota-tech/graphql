@@ -1,4 +1,4 @@
 type Query {
-  fetchTasks(userId: ID!): [Task!]!
-  fetchUser(id: ID!): User
+  fetchTasks: [Task!]!
+  fetchUser: User
 }

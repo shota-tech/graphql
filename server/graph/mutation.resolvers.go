@@ -26,7 +26,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 		ID:     xid.New().String(),
 		Text:   input.Text,
 		Status: model.StatusTodo,
-		UserID: input.UserID,
+		UserID: token.RegisteredClaims.Subject,
 	}
 	if err := r.TaskRepository.Store(ctx, task); err != nil {
 		return nil, err
@@ -59,8 +59,9 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, input *model.UpdateTa
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
 	user := &model.User{
-		ID:   xid.New().String(),
+		ID:   token.RegisteredClaims.Subject,
 		Name: input.Name,
 	}
 	if err := r.UserRepository.Store(ctx, user); err != nil {

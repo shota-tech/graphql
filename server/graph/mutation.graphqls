@@ -1,6 +1,5 @@
 input CreateTaskInput {
   text: String!
-  userId: ID!
 }
 
 input UpdateTaskInput {
