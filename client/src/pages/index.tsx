@@ -12,14 +12,12 @@ import {
 } from '@/graphql/generated'
 import { Board } from '@/components'
 
-const userId = 'cg1ltn51nm6u7l352ma0'
-
 const Home = () => {
   const [text, setText] = useState('')
   const [todoTasks, setTodoTasks] = useState<Task[]>([])
   const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
   const [doneTasks, setDoneTasks] = useState<Task[]>([])
-  const [fetchTasksResult] = useFetchTasksQuery({ variables: { userId: userId } })
+  const [fetchTasksResult] = useFetchTasksQuery()
   const [, createTask] = useCreateTaskMutation()
   const [, updateTask] = useUpdateTaskMutation()
   const { data, fetching, error } = fetchTasksResult
@@ -44,7 +42,7 @@ const Home = () => {
     if (!text) {
       return
     }
-    createTask({ text: text, userId: userId }).then((result) => {
+    createTask({ text: text }).then((result) => {
       if (result.error) {
         console.error('Oh no!', result.error)
       }

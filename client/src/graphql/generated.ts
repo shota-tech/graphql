@@ -17,7 +17,6 @@ export type Scalars = {
 
 export type CreateTaskInput = {
   text: Scalars['String'];
-  userId: Scalars['ID'];
 };
 
 export type CreateUserInput = {
@@ -52,16 +51,6 @@ export type Query = {
   fetchUser?: Maybe<User>;
 };
 
-
-export type QueryFetchTasksArgs = {
-  userId: Scalars['ID'];
-};
-
-
-export type QueryFetchUserArgs = {
-  id: Scalars['ID'];
-};
-
 export enum Status {
   Done = 'DONE',
   InProgress = 'IN_PROGRESS',
@@ -90,7 +79,6 @@ export type User = {
 
 export type CreateTaskMutationVariables = Exact<{
   text: Scalars['String'];
-  userId: Scalars['ID'];
 }>;
 
 
@@ -103,16 +91,12 @@ export type CreateUserMutationVariables = Exact<{
 
 export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, name: string } };
 
-export type FetchTasksQueryVariables = Exact<{
-  userId: Scalars['ID'];
-}>;
+export type FetchTasksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type FetchTasksQuery = { __typename?: 'Query', fetchTasks: Array<{ __typename?: 'Task', id: string, text: string, status: Status, user: { __typename?: 'User', id: string, name: string } }> };
 
-export type FetchUserQueryVariables = Exact<{
-  id: Scalars['ID'];
-}>;
+export type FetchUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type FetchUserQuery = { __typename?: 'Query', fetchUser?: { __typename?: 'User', id: string, name: string } | null };
@@ -128,8 +112,8 @@ export type UpdateTaskMutation = { __typename?: 'Mutation', updateTask: { __type
 
 
 export const CreateTaskDocument = gql`
-    mutation createTask($text: String!, $userId: ID!) {
-  createTask(input: {text: $text, userId: $userId}) {
+    mutation createTask($text: String!) {
+  createTask(input: {text: $text}) {
     id
     text
     status
@@ -156,8 +140,8 @@ export function useCreateUserMutation() {
   return Urql.useMutation<CreateUserMutation, CreateUserMutationVariables>(CreateUserDocument);
 };
 export const FetchTasksDocument = gql`
-    query fetchTasks($userId: ID!) {
-  fetchTasks(userId: $userId) {
+    query fetchTasks {
+  fetchTasks {
     id
     text
     status
@@ -169,19 +153,19 @@ export const FetchTasksDocument = gql`
 }
     `;
 
-export function useFetchTasksQuery(options: Omit<Urql.UseQueryArgs<FetchTasksQueryVariables>, 'query'>) {
+export function useFetchTasksQuery(options?: Omit<Urql.UseQueryArgs<FetchTasksQueryVariables>, 'query'>) {
   return Urql.useQuery<FetchTasksQuery, FetchTasksQueryVariables>({ query: FetchTasksDocument, ...options });
 };
 export const FetchUserDocument = gql`
-    query fetchUser($id: ID!) {
-  fetchUser(id: $id) {
+    query fetchUser {
+  fetchUser {
     id
     name
   }
 }
     `;
 
-export function useFetchUserQuery(options: Omit<Urql.UseQueryArgs<FetchUserQueryVariables>, 'query'>) {
+export function useFetchUserQuery(options?: Omit<Urql.UseQueryArgs<FetchUserQueryVariables>, 'query'>) {
   return Urql.useQuery<FetchUserQuery, FetchUserQueryVariables>({ query: FetchUserDocument, ...options });
 };
 export const UpdateTaskDocument = gql`

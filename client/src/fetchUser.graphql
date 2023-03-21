@@ -1,5 +1,5 @@
-query fetchUser($id: ID!) {
-  fetchUser(id: $id) {
+query fetchUser {
+  fetchUser {
     id
     name
   }

@@ -1,5 +1,5 @@
-mutation createTask($text: String!, $userId: ID!) {
-  createTask(input: { text: $text, userId: $userId }) {
+mutation createTask($text: String!) {
+  createTask(input: { text: $text }) {
     id
     text
     status

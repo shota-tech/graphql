@@ -1,5 +1,5 @@
-query fetchTasks($userId: ID!) {
-  fetchTasks(userId: $userId) {
+query fetchTasks {
+  fetchTasks {
     id
     text
     status
