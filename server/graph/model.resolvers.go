@@ -16,6 +16,11 @@ import (
 
 // User is the resolver for the user field.
 func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeReadUser) {
+		return nil, errors.New("invalid scope")
+	}
 	return r.UserRepository.Get(ctx, obj.UserID)
 }
 
