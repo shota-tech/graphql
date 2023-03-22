@@ -16,7 +16,7 @@ const Callback = () => {
     if (!data.fetchUser) {
       createUser({ name: user.name ?? '' }).then((result) => {
         if (result.error) {
-          console.error('Oh no!', result.error)
+          console.error('failed to update user: ', result.error)
         }
       })
     }

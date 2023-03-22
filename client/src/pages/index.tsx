@@ -41,7 +41,7 @@ const Home = () => {
     }
     createTask({ text: text }).then((result) => {
       if (result.error) {
-        console.error('Oh no!', result.error)
+        console.error('failed to create task: ', result.error)
       }
     })
     setText('')
@@ -73,7 +73,7 @@ const Home = () => {
     }
     updateTask({ id: task.id, status: newStatus }).then((result) => {
       if (result.error) {
-        console.error('Oh no!', result.error)
+        console.error('failed to update task: ', result.error)
       }
     })
   }
