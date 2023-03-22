@@ -75,6 +75,7 @@ export type User = {
   __typename?: 'User';
   id: Scalars['ID'];
   name: Scalars['String'];
+  tasks: Array<Task>;
 };
 
 export type CreateTaskMutationVariables = Exact<{
