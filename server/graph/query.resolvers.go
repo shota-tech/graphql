@@ -27,6 +27,10 @@ func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
 // FetchUser is the resolver for the fetchUser field.
 func (r *queryResolver) FetchUser(ctx context.Context) (*model.User, error) {
 	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeReadUser) {
+		return nil, errors.New("invalid scope")
+	}
 	return r.UserRepository.Get(ctx, token.RegisteredClaims.Subject)
 }
 

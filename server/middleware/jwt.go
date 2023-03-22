@@ -17,6 +17,8 @@ import (
 const (
 	ScopeReadTasks  = "read:tasks"
 	ScopeWriteTasks = "write:tasks"
+	ScopeReadUser   = "read:user"
+	ScopeWriteUser  = "write:user"
 )
 
 type CustomClaims struct {

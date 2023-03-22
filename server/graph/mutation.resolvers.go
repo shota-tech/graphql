@@ -60,6 +60,10 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, input *model.UpdateTa
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
 	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeWriteUser) {
+		return nil, errors.New("invalid scope")
+	}
 	user := &model.User{
 		ID:   token.RegisteredClaims.Subject,
 		Name: input.Name,
