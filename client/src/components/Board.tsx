@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { HStack } from '@chakra-ui/react'
 import { DndContext, rectIntersection, DragEndEvent } from '@dnd-kit/core'
-import { Task } from '@/graphql/generated'
+import { Task } from '@/components'
 import { List } from '.'
 
 type Props = {

@@ -1,3 +1,4 @@
+export * from './types'
 export * from './AuthorizedUrqlProvider'
 export * from './Board'
 export * from './Card'

@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { Text, VStack } from '@chakra-ui/react'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Task } from '@/graphql/generated'
+import { Task } from '@/components'
 
 type Props = {
   parent: string

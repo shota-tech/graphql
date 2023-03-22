@@ -4,13 +4,12 @@ import { IconButton, Input, HStack, VStack } from '@chakra-ui/react'
 import { AddIcon } from '@chakra-ui/icons'
 import { DragEndEvent } from '@dnd-kit/core'
 import {
-  Task,
   Status,
   useFetchTasksQuery,
   useCreateTaskMutation,
   useUpdateTaskMutation,
 } from '@/graphql/generated'
-import { Board } from '@/components'
+import { Task, Board } from '@/components'
 
 const Home = () => {
   const [text, setText] = useState('')

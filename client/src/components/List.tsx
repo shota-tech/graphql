@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { Heading, VStack } from '@chakra-ui/react'
 import { useDroppable } from '@dnd-kit/core'
-import { Task } from '@/graphql/generated'
+import { Task } from '@/components'
 import { Card } from '.'
 
 type Props = {
