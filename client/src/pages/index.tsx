@@ -23,9 +23,7 @@ const Home = () => {
   const { data, fetching, error } = fetchTasksResult
 
   useEffect(() => {
-    if (!data) {
-      return
-    }
+    if (!data) return
     setTodoTasks(data.fetchTasks.filter((task) => task.status === Status.Todo))
     setInProgressTasks(data.fetchTasks.filter((task) => task.status === Status.InProgress))
     setDoneTasks(data.fetchTasks.filter((task) => task.status === Status.Done))
