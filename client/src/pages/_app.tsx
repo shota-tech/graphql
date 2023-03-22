@@ -10,7 +10,7 @@ const App = ({ Component, pageProps }: AppProps) => {
       domain={AUTH0_DOMAIN}
       clientId={AUTH0_CLIENT_ID}
       authorizationParams={{
-        redirect_uri: BASE_URL,
+        redirect_uri: BASE_URL + '/callback',
         audience: API_URL,
       }}
     >
