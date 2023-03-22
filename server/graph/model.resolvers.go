@@ -6,8 +6,12 @@ package graph
 
 import (
 	"context"
+	"errors"
 
+	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/shota-tech/graphql/server/graph/model"
+	"github.com/shota-tech/graphql/server/middleware"
 )
 
 // User is the resolver for the user field.
@@ -15,7 +19,21 @@ func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, 
 	return r.UserRepository.Get(ctx, obj.UserID)
 }
 
+// Tasks is the resolver for the tasks field.
+func (r *userResolver) Tasks(ctx context.Context, obj *model.User) ([]*model.Task, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeReadTasks) {
+		return nil, errors.New("invalid scope")
+	}
+	return r.TaskRepository.ListByUserID(ctx, obj.ID)
+}
+
 // Task returns TaskResolver implementation.
 func (r *Resolver) Task() TaskResolver { return &taskResolver{r} }
 
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
 type taskResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }
