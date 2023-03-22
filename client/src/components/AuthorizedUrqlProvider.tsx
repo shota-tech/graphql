@@ -44,7 +44,7 @@ export const AuthorizedUrqlProvider: FC<{ children: ReactNode }> = ({ children }
         const token = await getAccessTokenSilently({
           authorizationParams: {
             audience: API_URL,
-            scope: 'read:tasks write:tasks',
+            scope: 'read:tasks write:tasks read:user write:user',
           },
         })
 
