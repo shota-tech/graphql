@@ -21,7 +21,7 @@ const Callback = () => {
       })
     }
     router.push('/')
-  }, [user, data])
+  }, [user, data, createUser, router])
 
   return (
     <Center h='xl'>
