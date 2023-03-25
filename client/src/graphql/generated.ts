@@ -42,7 +42,7 @@ export type MutationCreateUserArgs = {
 
 
 export type MutationUpdateTaskArgs = {
-  input?: InputMaybe<UpdateTaskInput>;
+  input: UpdateTaskInput;
 };
 
 export type Query = {
