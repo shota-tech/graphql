@@ -12,8 +12,21 @@ input CreateUserInput {
   name: String!
 }
 
+input CreateTodoInput {
+  text: String!
+  taskID: String!
+}
+
+input UpdateTodoInput {
+  id: ID!
+  text: String
+  done: Boolean
+}
+
 type Mutation {
   createTask(input: CreateTaskInput!): Task!
   updateTask(input: UpdateTaskInput!): Task!
   createUser(input: CreateUserInput!): User!
+  createTodo(input: CreateTodoInput!): Todo!
+  updateTodo(input: UpdateTodoInput!): Todo!
 }

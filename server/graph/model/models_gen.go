@@ -12,6 +12,11 @@ type CreateTaskInput struct {
 	Text string `json:"text"`
 }
 
+type CreateTodoInput struct {
+	Text   string `json:"text"`
+	TaskID string `json:"taskID"`
+}
+
 type CreateUserInput struct {
 	Name string `json:"name"`
 }
@@ -20,6 +25,12 @@ type UpdateTaskInput struct {
 	ID     string  `json:"id"`
 	Text   *string `json:"text"`
 	Status *Status `json:"status"`
+}
+
+type UpdateTodoInput struct {
+	ID   string  `json:"id"`
+	Text *string `json:"text"`
+	Done *bool   `json:"done"`
 }
 
 type Status string

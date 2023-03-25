@@ -9,4 +9,5 @@ import "github.com/shota-tech/graphql/server/repository"
 type Resolver struct {
 	TaskRepository repository.ITaskRepository
 	UserRepository repository.IUserRepository
+	TodoRepository repository.ITodoRepository
 }

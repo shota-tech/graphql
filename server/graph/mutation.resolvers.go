@@ -74,6 +74,48 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	return user, nil
 }
 
+// CreateTodo is the resolver for the createTodo field.
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTodoInput) (*model.Todo, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeWriteTasks) {
+		return nil, errors.New("invalid scope")
+	}
+	todo := &model.Todo{
+		ID:     xid.New().String(),
+		Text:   input.Text,
+		Done:   false,
+		TaskID: input.TaskID,
+	}
+	if err := r.TodoRepository.Store(ctx, todo); err != nil {
+		return nil, err
+	}
+	return todo, nil
+}
+
+// UpdateTodo is the resolver for the updateTodo field.
+func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeWriteTasks) {
+		return nil, errors.New("invalid scope")
+	}
+	todo, err := r.TodoRepository.Get(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	if input.Text != nil {
+		todo.Text = *input.Text
+	}
+	if input.Done != nil {
+		todo.Done = *input.Done
+	}
+	if err := r.TodoRepository.Store(ctx, todo); err != nil {
+		return nil, err
+	}
+	return todo, nil
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
