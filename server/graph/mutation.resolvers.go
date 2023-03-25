@@ -15,6 +15,23 @@ import (
 	"github.com/shota-tech/graphql/server/middleware"
 )
 
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
+	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*middleware.CustomClaims)
+	if !claims.HasScope(middleware.ScopeWriteUser) {
+		return nil, errors.New("invalid scope")
+	}
+	user := &model.User{
+		ID:   token.RegisteredClaims.Subject,
+		Name: input.Name,
+	}
+	if err := r.UserRepository.Store(ctx, user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error) {
 	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
@@ -55,23 +72,6 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTas
 		return nil, err
 	}
 	return task, nil
-}
-
-// CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteUser) {
-		return nil, errors.New("invalid scope")
-	}
-	user := &model.User{
-		ID:   token.RegisteredClaims.Subject,
-		Name: input.Name,
-	}
-	if err := r.UserRepository.Store(ctx, user); err != nil {
-		return nil, err
-	}
-	return user, nil
 }
 
 // CreateTodo is the resolver for the createTodo field.
