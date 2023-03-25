@@ -19,6 +19,11 @@ export type CreateTaskInput = {
   text: Scalars['String'];
 };
 
+export type CreateTodoInput = {
+  taskID: Scalars['String'];
+  text: Scalars['String'];
+};
+
 export type CreateUserInput = {
   name: Scalars['String'];
 };
@@ -26,13 +31,20 @@ export type CreateUserInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   createTask: Task;
+  createTodo: Todo;
   createUser: User;
   updateTask: Task;
+  updateTodo: Todo;
 };
 
 
 export type MutationCreateTaskArgs = {
   input: CreateTaskInput;
+};
+
+
+export type MutationCreateTodoArgs = {
+  input: CreateTodoInput;
 };
 
 
@@ -43,6 +55,11 @@ export type MutationCreateUserArgs = {
 
 export type MutationUpdateTaskArgs = {
   input: UpdateTaskInput;
+};
+
+
+export type MutationUpdateTodoArgs = {
+  input: UpdateTodoInput;
 };
 
 export type Query = {
@@ -62,12 +79,27 @@ export type Task = {
   id: Scalars['ID'];
   status: Status;
   text: Scalars['String'];
+  todos: Array<Todo>;
   user: User;
+};
+
+export type Todo = {
+  __typename?: 'Todo';
+  done: Scalars['Boolean'];
+  id: Scalars['ID'];
+  task: Task;
+  text: Scalars['String'];
 };
 
 export type UpdateTaskInput = {
   id: Scalars['ID'];
   status?: InputMaybe<Status>;
+  text?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateTodoInput = {
+  done?: InputMaybe<Scalars['Boolean']>;
+  id: Scalars['ID'];
   text?: InputMaybe<Scalars['String']>;
 };
 
