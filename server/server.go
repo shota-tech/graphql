@@ -50,9 +50,11 @@ func main() {
 	// DI
 	taskRepository := repository.NewTaskRepository(db)
 	userRepository := repository.NewUserRepository(db)
+	todoRepository := repository.NewTodoRepository(db)
 	resolver := &graph.Resolver{
 		TaskRepository: taskRepository,
 		UserRepository: userRepository,
+		TodoRepository: todoRepository,
 	}
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
