@@ -14,6 +14,6 @@ input CreateUserInput {
 
 type Mutation {
   createTask(input: CreateTaskInput!): Task!
-  updateTask(input: UpdateTaskInput): Task!
+  updateTask(input: UpdateTaskInput!): Task!
   createUser(input: CreateUserInput!): User!
 }

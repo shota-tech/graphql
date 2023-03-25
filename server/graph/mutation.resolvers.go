@@ -35,7 +35,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 }
 
 // UpdateTask is the resolver for the updateTask field.
-func (r *mutationResolver) UpdateTask(ctx context.Context, input *model.UpdateTaskInput) (*model.Task, error) {
+func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTaskInput) (*model.Task, error) {
 	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
 	claims := token.CustomClaims.(*middleware.CustomClaims)
 	if !claims.HasScope(middleware.ScopeWriteTasks) {

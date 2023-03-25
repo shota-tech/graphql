@@ -50,7 +50,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateTask func(childComplexity int, input model.CreateTaskInput) int
 		CreateUser func(childComplexity int, input model.CreateUserInput) int
-		UpdateTask func(childComplexity int, input *model.UpdateTaskInput) int
+		UpdateTask func(childComplexity int, input model.UpdateTaskInput) int
 	}
 
 	Query struct {
@@ -74,7 +74,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error)
-	UpdateTask(ctx context.Context, input *model.UpdateTaskInput) (*model.Task, error)
+	UpdateTask(ctx context.Context, input model.UpdateTaskInput) (*model.Task, error)
 	CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error)
 }
 type QueryResolver interface {
@@ -137,7 +137,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTask(childComplexity, args["input"].(*model.UpdateTaskInput)), true
+		return e.complexity.Mutation.UpdateTask(childComplexity, args["input"].(model.UpdateTaskInput)), true
 
 	case "Query.fetchTasks":
 		if e.complexity.Query.FetchTasks == nil {
@@ -327,10 +327,10 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_updateTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.UpdateTaskInput
+	var arg0 model.UpdateTaskInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOUpdateTaskInput2ᚖgithubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUpdateTaskInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateTaskInput2githubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUpdateTaskInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -470,7 +470,7 @@ func (ec *executionContext) _Mutation_updateTask(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTask(rctx, fc.Args["input"].(*model.UpdateTaskInput))
+		return ec.resolvers.Mutation().UpdateTask(rctx, fc.Args["input"].(model.UpdateTaskInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3697,6 +3697,11 @@ func (ec *executionContext) marshalNTask2ᚖgithubᚗcomᚋshotaᚑtechᚋgraphq
 	return ec._Task(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateTaskInput2githubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUpdateTaskInput(ctx context.Context, v interface{}) (model.UpdateTaskInput, error) {
+	res, err := ec.unmarshalInputUpdateTaskInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNUser2githubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -4020,14 +4025,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOUpdateTaskInput2ᚖgithubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUpdateTaskInput(ctx context.Context, v interface{}) (*model.UpdateTaskInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputUpdateTaskInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋshotaᚑtechᚋgraphqlᚋserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
