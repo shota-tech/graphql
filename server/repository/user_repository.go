@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/shota-tech/graphql/server/graph/model"
+	"github.com/shota-tech/graphql/server/repository/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type (
@@ -30,50 +31,41 @@ func (r *UserRepository) Store(ctx context.Context, user *model.User) error {
 	if user == nil {
 		return errors.New("user is required")
 	}
-	query := "INSERT INTO users (id, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name);"
-	_, err := r.db.ExecContext(ctx, query, user.ID, user.Name)
-	if err != nil {
+	row := models.User{
+		ID:   user.ID,
+		Name: user.Name,
+	}
+	if err := row.Upsert(ctx, r.db, boil.Infer(), boil.Infer()); err != nil {
 		return fmt.Errorf("failed to upsert record: %w", err)
 	}
 	return nil
 }
 
 func (r *UserRepository) Get(ctx context.Context, id string) (*model.User, error) {
-	user := &model.User{}
-	query := "SELECT id, name FROM users WHERE id = ?;"
-	err := r.db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name)
+	row, err := models.Users(models.UserWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("record not found")
 		}
 		return nil, fmt.Errorf("failed to get record: %w", err)
 	}
-	return user, nil
+	return &model.User{
+		ID:   row.ID,
+		Name: row.Name,
+	}, nil
 }
 
 func (r *UserRepository) List(ctx context.Context, ids []string) ([]*model.User, error) {
-	args := make([]any, len(ids))
-	for i, id := range ids {
-		args[i] = id
-	}
-	query := "SELECT id, name FROM users " +
-		"WHERE id IN (?" + strings.Repeat(",?", len(ids)-1) + ");"
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := models.Users(models.UserWhere.ID.IN(ids)).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}
-	defer rows.Close()
-
-	users := make([]*model.User, 0)
-	for rows.Next() {
-		user := &model.User{}
-		if err := rows.Scan(&user.ID, &user.Name); err != nil {
-			return nil, fmt.Errorf("failed to scan record: %w", err)
+	users := make([]*model.User, len(rows))
+	for i, row := range rows {
+		users[i] = &model.User{
+			ID:   row.ID,
+			Name: row.Name,
 		}
-		users = append(users, user)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan records: %w", err)
 	}
 	return users, nil
 }

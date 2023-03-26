@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/shota-tech/graphql/server/graph/model"
@@ -21,9 +22,9 @@ func TestTodoRepository_Store(t *testing.T) {
 	}{
 		"happy path": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "INSERT INTO todos (id, text, done, task_id) VALUES (?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE text = VALUES(text), done = VALUES(done), task_id = VALUES(task_id);"
-				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g"}
+				query := "INSERT INTO `todos` (`id`,`text`,`done`,`task_id`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?) " +
+					"ON DUPLICATE KEY UPDATE `text` = VALUES(`text`),`done` = VALUES(`done`),`task_id` = VALUES(`task_id`),`created_at` = VALUES(`created_at`),`updated_at` = VALUES(`updated_at`)"
+				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g", sqlmock.AnyArg(), sqlmock.AnyArg()}
 				mock.ExpectExec(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -43,9 +44,9 @@ func TestTodoRepository_Store(t *testing.T) {
 		},
 		"failed to upsert record": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "INSERT INTO todos (id, text, done, task_id) VALUES (?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE text = VALUES(text), done = VALUES(done), task_id = VALUES(task_id);"
-				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g"}
+				query := "INSERT INTO `todos` (`id`,`text`,`done`,`task_id`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?) " +
+					"ON DUPLICATE KEY UPDATE `text` = VALUES(`text`),`done` = VALUES(`done`),`task_id` = VALUES(`task_id`),`created_at` = VALUES(`created_at`),`updated_at` = VALUES(`updated_at`)"
+				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g", sqlmock.AnyArg(), sqlmock.AnyArg()}
 				mock.ExpectExec(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnError(assert.AnError)
@@ -86,9 +87,9 @@ func TestTodoRepository_Get(t *testing.T) {
 	}{
 		"happy path": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE id = ?;"
-				row := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
-					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g")
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` = ?) LIMIT 1;"
+				row := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g", time.Now(), time.Now())
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("cgf90odvqc7hkkh47tg0").
 					WillReturnRows(row)
@@ -104,8 +105,8 @@ func TestTodoRepository_Get(t *testing.T) {
 		},
 		"record not found": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE id = ?;"
-				row := sqlmock.NewRows([]string{"id", "text", "done", "task_id"})
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` = ?) LIMIT 1;"
+				row := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"})
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("cgf90odvqc7hkkh47tg0").
 					WillReturnRows(row)
@@ -116,23 +117,10 @@ func TestTodoRepository_Get(t *testing.T) {
 		},
 		"failed to get record": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE id = ?;"
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` = ?) LIMIT 1;"
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs("cgf90odvqc7hkkh47tg0").
 					WillReturnError(assert.AnError)
-			},
-			id:        "cgf90odvqc7hkkh47tg0",
-			want:      nil,
-			assertErr: assert.Error,
-		},
-		"failed to scan record": {
-			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE id = ?;"
-				row := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
-					AddRow("cgf90odvqc7hkkh47tg0", nil, false, "cg1m0bd1nm6u7kpjp15g")
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs("cgf90odvqc7hkkh47tg0").
-					WillReturnRows(row)
 			},
 			id:        "cgf90odvqc7hkkh47tg0",
 			want:      nil,
@@ -167,11 +155,11 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 	}{
 		"happy path": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`task_id` IN (?,?));"
 				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
-				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
-					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
-					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0")
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g", time.Now(), time.Now()).
+					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0", time.Now(), time.Now())
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnRows(rows)
@@ -185,9 +173,9 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 		},
 		"0 records": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`task_id` IN (?,?));"
 				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
-				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"})
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"})
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnRows(rows)
@@ -198,42 +186,11 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 		},
 		"failed to get records": {
 			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`task_id` IN (?,?));"
 				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
 				mock.ExpectQuery(regexp.QuoteMeta(query)).
 					WithArgs(args...).
 					WillReturnError(assert.AnError)
-			},
-			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
-			want:      nil,
-			assertErr: assert.Error,
-		},
-		"failed to scan record": {
-			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
-				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
-				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
-					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
-					AddRow("cgf95atvqc7hriet4at0", nil, true, "cg2j6hl1nm6ivqd084m0")
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(args...).
-					WillReturnRows(rows)
-			},
-			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
-			want:      nil,
-			assertErr: assert.Error,
-		},
-		"failed to scan records": {
-			setup: func(mock sqlmock.Sqlmock) {
-				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
-				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
-				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
-					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
-					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0").
-					RowError(1, assert.AnError)
-				mock.ExpectQuery(regexp.QuoteMeta(query)).
-					WithArgs(args...).
-					WillReturnRows(rows)
 			},
 			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want:      nil,

@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/shota-tech/graphql/server/graph/model"
+	"github.com/shota-tech/graphql/server/repository/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type (
@@ -32,100 +33,81 @@ func (r *TaskRepository) Store(ctx context.Context, task *model.Task) error {
 	if task == nil {
 		return errors.New("task is required")
 	}
-	query := "INSERT INTO tasks (id, text, status, user_id) VALUES (?, ?, ?, ?) " +
-		"ON DUPLICATE KEY UPDATE text = VALUES(text), status = VALUES(status), user_id = VALUES(user_id);"
-	_, err := r.db.ExecContext(ctx, query, task.ID, task.Text, task.Status.String(), task.UserID)
-	if err != nil {
+	row := models.Task{
+		ID:     task.ID,
+		Text:   task.Text,
+		Status: task.Status.String(),
+		UserID: task.UserID,
+	}
+	if err := row.Upsert(ctx, r.db, boil.Infer(), boil.Infer()); err != nil {
 		return fmt.Errorf("failed to upsert record: %w", err)
 	}
 	return nil
 }
 
 func (r *TaskRepository) Get(ctx context.Context, id string) (*model.Task, error) {
-	task := &model.Task{}
-	query := "SELECT id, text, status, user_id FROM tasks WHERE id = ?;"
-	err := r.db.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Text, &task.Status, &task.UserID)
+	row, err := models.Tasks(models.TaskWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("record not found")
 		}
 		return nil, fmt.Errorf("failed to get record: %w", err)
 	}
-	return task, nil
+	return &model.Task{
+		ID:     row.ID,
+		Text:   row.Text,
+		Status: model.Status(row.Status),
+		UserID: row.UserID,
+	}, nil
 }
 
 func (r *TaskRepository) List(ctx context.Context, ids []string) ([]*model.Task, error) {
-	args := make([]any, len(ids))
-	for i, id := range ids {
-		args[i] = id
-	}
-	query := "SELECT id, text, status, user_id FROM tasks " +
-		"WHERE id IN (?" + strings.Repeat(",?", len(ids)-1) + ");"
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := models.Tasks(models.TaskWhere.ID.IN(ids)).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}
-	defer rows.Close()
-
-	tasks := make([]*model.Task, 0)
-	for rows.Next() {
-		task := &model.Task{}
-		if err := rows.Scan(&task.ID, &task.Text, &task.Status, &task.UserID); err != nil {
-			return nil, fmt.Errorf("failed to scan record: %w", err)
+	tasks := make([]*model.Task, len(rows))
+	for i, row := range rows {
+		tasks[i] = &model.Task{
+			ID:     row.ID,
+			Text:   row.Text,
+			Status: model.Status(row.Status),
+			UserID: row.UserID,
 		}
-		tasks = append(tasks, task)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan records: %w", err)
 	}
 	return tasks, nil
 }
 
 func (r *TaskRepository) ListByUserID(ctx context.Context, userID string) ([]*model.Task, error) {
-	query := "SELECT id, text, status, user_id FROM tasks WHERE user_id = ?;"
-	rows, err := r.db.QueryContext(ctx, query, userID)
+	rows, err := models.Tasks(models.TaskWhere.UserID.EQ(userID)).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}
-	defer rows.Close()
-
-	tasks := make([]*model.Task, 0)
-	for rows.Next() {
-		task := &model.Task{}
-		if err := rows.Scan(&task.ID, &task.Text, &task.Status, &task.UserID); err != nil {
-			return nil, fmt.Errorf("failed to scan record: %w", err)
+	tasks := make([]*model.Task, len(rows))
+	for i, row := range rows {
+		tasks[i] = &model.Task{
+			ID:     row.ID,
+			Text:   row.Text,
+			Status: model.Status(row.Status),
+			UserID: row.UserID,
 		}
-		tasks = append(tasks, task)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan records: %w", err)
 	}
 	return tasks, nil
 }
 
 func (r *TaskRepository) ListByUserIDs(ctx context.Context, userIDs []string) ([]*model.Task, error) {
-	args := make([]any, len(userIDs))
-	for i, userID := range userIDs {
-		args[i] = userID
-	}
-	query := "SELECT id, text, status, user_id FROM tasks " +
-		"WHERE user_id IN (?" + strings.Repeat(",?", len(userIDs)-1) + ");"
-	rows, err := r.db.QueryContext(ctx, query, args...)
+	rows, err := models.Tasks(models.TaskWhere.UserID.IN(userIDs)).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}
-	defer rows.Close()
-
-	tasks := make([]*model.Task, 0)
-	for rows.Next() {
-		task := &model.Task{}
-		if err := rows.Scan(&task.ID, &task.Text, &task.Status, &task.UserID); err != nil {
-			return nil, fmt.Errorf("failed to scan record: %w", err)
+	tasks := make([]*model.Task, len(rows))
+	for i, row := range rows {
+		tasks[i] = &model.Task{
+			ID:     row.ID,
+			Text:   row.Text,
+			Status: model.Status(row.Status),
+			UserID: row.UserID,
 		}
-		tasks = append(tasks, task)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan records: %w", err)
 	}
 	return tasks, nil
 }
