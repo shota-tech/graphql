@@ -19,7 +19,8 @@ func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, 
 	if !claims.HasScope(auth.ScopeReadUser) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.UserRepository.Get(ctx, obj.UserID)
+	thunk := r.Loaders.UserLoader.Load(ctx, obj.UserID)
+	return thunk()
 }
 
 // Todos is the resolver for the todos field.

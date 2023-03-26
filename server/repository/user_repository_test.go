@@ -146,3 +146,104 @@ func TestUserRepository_Get(t *testing.T) {
 		})
 	}
 }
+
+func TestUserRepository_List(t *testing.T) {
+	tests := map[string]struct {
+		setup     func(sqlmock.Sqlmock)
+		ids       []string
+		want      []*model.User
+		assertErr assert.ErrorAssertionFunc
+	}{
+		"happy path": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id IN (?,?);"
+				args := []driver.Value{"auth0|123456", "auth0|567890"}
+				rows := sqlmock.NewRows([]string{"id", "name"}).
+					AddRow("auth0|123456", "user1").
+					AddRow("auth0|567890", "user2")
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids: []string{"auth0|123456", "auth0|567890"},
+			want: []*model.User{
+				{ID: "auth0|123456", Name: "user1"},
+				{ID: "auth0|567890", Name: "user2"},
+			},
+			assertErr: assert.NoError,
+		},
+		"0 records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id IN (?,?);"
+				args := []driver.Value{"auth0|123456", "auth0|567890"}
+				rows := sqlmock.NewRows([]string{"id", "name"})
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"auth0|123456", "auth0|567890"},
+			want:      []*model.User{},
+			assertErr: assert.NoError,
+		},
+		"failed to get records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id IN (?,?);"
+				args := []driver.Value{"auth0|123456", "auth0|567890"}
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnError(assert.AnError)
+			},
+			ids:       []string{"auth0|123456", "auth0|567890"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan record": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id IN (?,?);"
+				args := []driver.Value{"auth0|123456", "auth0|567890"}
+				rows := sqlmock.NewRows([]string{"id", "name"}).
+					AddRow("auth0|123456", "user1").
+					AddRow("auth0|567890", nil)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"auth0|123456", "auth0|567890"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, name FROM users WHERE id IN (?,?);"
+				args := []driver.Value{"auth0|123456", "auth0|567890"}
+				rows := sqlmock.NewRows([]string{"id", "name"}).
+					AddRow("auth0|123456", "user1").
+					AddRow("auth0|567890", "user2").
+					RowError(1, assert.AnError)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"auth0|123456", "auth0|567890"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// setup sqlmock
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+			if tt.setup != nil {
+				tt.setup(mock)
+			}
+			// test
+			sut := repository.NewUserRepository(db)
+			got, err := sut.List(context.Background(), tt.ids)
+			assert.Equal(t, tt.want, got)
+			tt.assertErr(t, err)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}

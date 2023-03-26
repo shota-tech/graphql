@@ -53,8 +53,10 @@ func main() {
 	taskRepository := repository.NewTaskRepository(db)
 	todoRepository := repository.NewTodoRepository(db)
 	taskLoader := loader.NewTaskLoader(taskRepository)
+	userLoader := loader.NewUserLoader(userRepository)
 	todoLoader := loader.NewTodoLoader(todoRepository)
 	loaders := loader.NewLoaders(
+		userLoader,
 		taskLoader,
 		todoLoader,
 	)
