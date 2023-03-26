@@ -15,7 +15,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/shota-tech/graphql/server/graph"
 	"github.com/shota-tech/graphql/server/loader"
-	"github.com/shota-tech/graphql/server/middleware"
+	"github.com/shota-tech/graphql/server/middleware/auth"
 	"github.com/shota-tech/graphql/server/repository"
 )
 
@@ -72,7 +72,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	router.With(middleware.EnsureValidToken()).Handle("/graphql", srv)
+	router.With(auth.EnsureValidToken()).Handle("/graphql", srv)
 
 	// start server
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
