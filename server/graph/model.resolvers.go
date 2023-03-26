@@ -31,7 +31,8 @@ func (r *taskResolver) Todos(ctx context.Context, obj *model.Task) ([]*model.Tod
 	if !claims.HasScope(middleware.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.TodoRepository.ListByTaskID(ctx, obj.ID)
+	thunk := r.Loaders.TodoLoaderByTaskID.Load(ctx, obj.ID)
+	return thunk()
 }
 
 // Task is the resolver for the task field.

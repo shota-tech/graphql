@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-sql-driver/mysql"
 	"github.com/shota-tech/graphql/server/graph"
+	"github.com/shota-tech/graphql/server/loader"
 	"github.com/shota-tech/graphql/server/middleware"
 	"github.com/shota-tech/graphql/server/repository"
 )
@@ -51,7 +52,10 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	taskRepository := repository.NewTaskRepository(db)
 	todoRepository := repository.NewTodoRepository(db)
+	todoLoader := loader.NewTodoLoader(todoRepository)
+	loaders := loader.NewLoaders(todoLoader)
 	resolver := &graph.Resolver{
+		Loaders:        loaders,
 		UserRepository: userRepository,
 		TaskRepository: taskRepository,
 		TodoRepository: todoRepository,

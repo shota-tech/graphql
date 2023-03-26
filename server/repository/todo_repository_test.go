@@ -258,3 +258,104 @@ func TestTodoRepository_ListByTaskID(t *testing.T) {
 		})
 	}
 }
+
+func TestTodoRepository_ListByTaskIDs(t *testing.T) {
+	tests := map[string]struct {
+		setup     func(sqlmock.Sqlmock)
+		ids       []string
+		want      []*model.Todo
+		assertErr assert.ErrorAssertionFunc
+	}{
+		"happy path": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
+					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0")
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids: []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			want: []*model.Todo{
+				{ID: "cgf90odvqc7hkkh47tg0", Text: "todo1", Done: false, TaskID: "cg1m0bd1nm6u7kpjp15g"},
+				{ID: "cgf95atvqc7hriet4at0", Text: "todo2", Done: true, TaskID: "cg2j6hl1nm6ivqd084m0"},
+			},
+			assertErr: assert.NoError,
+		},
+		"0 records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"})
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			want:      []*model.Todo{},
+			assertErr: assert.NoError,
+		},
+		"failed to get records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnError(assert.AnError)
+			},
+			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan record": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
+					AddRow("cgf95atvqc7hriet4at0", nil, true, "cg2j6hl1nm6ivqd084m0")
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+		"failed to scan records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?,?);"
+				args := []driver.Value{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g").
+					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0").
+					RowError(1, assert.AnError)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// setup sqlmock
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+			if tt.setup != nil {
+				tt.setup(mock)
+			}
+			// test
+			sut := repository.NewTodoRepository(db)
+			got, err := sut.ListByTaskIDs(context.Background(), tt.ids)
+			assert.Equal(t, tt.want, got)
+			tt.assertErr(t, err)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}

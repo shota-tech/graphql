@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/shota-tech/graphql/server/graph/model"
 )
@@ -14,6 +15,7 @@ type (
 		Store(context.Context, *model.Todo) error
 		Get(context.Context, string) (*model.Todo, error)
 		ListByTaskID(context.Context, string) ([]*model.Todo, error)
+		ListByTaskIDs(context.Context, []string) ([]*model.Todo, error)
 	}
 
 	TodoRepository struct {
@@ -54,6 +56,32 @@ func (r *TodoRepository) Get(ctx context.Context, id string) (*model.Todo, error
 func (r *TodoRepository) ListByTaskID(ctx context.Context, taskID string) ([]*model.Todo, error) {
 	query := "SELECT id, text, done, task_id FROM todos WHERE task_id = ?;"
 	rows, err := r.db.QueryContext(ctx, query, taskID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get records: %w", err)
+	}
+	defer rows.Close()
+
+	todos := make([]*model.Todo, 0)
+	for rows.Next() {
+		todo := &model.Todo{}
+		if err := rows.Scan(&todo.ID, &todo.Text, &todo.Done, &todo.TaskID); err != nil {
+			return nil, fmt.Errorf("failed to scan record: %w", err)
+		}
+		todos = append(todos, todo)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan records: %w", err)
+	}
+	return todos, nil
+}
+
+func (r *TodoRepository) ListByTaskIDs(ctx context.Context, taskIDs []string) ([]*model.Todo, error) {
+	args := make([]any, len(taskIDs))
+	for i, taskID := range taskIDs {
+		args[i] = taskID
+	}
+	query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?" + strings.Repeat(",?", len(taskIDs)-1) + ");"
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
 	}
