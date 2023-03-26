@@ -52,8 +52,12 @@ func main() {
 	userRepository := repository.NewUserRepository(db)
 	taskRepository := repository.NewTaskRepository(db)
 	todoRepository := repository.NewTodoRepository(db)
+	taskLoader := loader.NewTaskLoader(taskRepository)
 	todoLoader := loader.NewTodoLoader(todoRepository)
-	loaders := loader.NewLoaders(todoLoader)
+	loaders := loader.NewLoaders(
+		taskLoader,
+		todoLoader,
+	)
 	resolver := &graph.Resolver{
 		Loaders:        loaders,
 		UserRepository: userRepository,

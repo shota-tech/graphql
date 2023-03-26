@@ -40,7 +40,8 @@ func (r *todoResolver) Task(ctx context.Context, obj *model.Todo) (*model.Task, 
 	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.TaskRepository.Get(ctx, obj.TaskID)
+	thunk := r.Loaders.TaskLoader.Load(ctx, obj.TaskID)
+	return thunk()
 }
 
 // Tasks is the resolver for the tasks field.
@@ -50,7 +51,8 @@ func (r *userResolver) Tasks(ctx context.Context, obj *model.User) ([]*model.Tas
 	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.TaskRepository.ListByUserID(ctx, obj.ID)
+	thunk := r.Loaders.TaskLoaderByUserID.Load(ctx, obj.ID)
+	return thunk()
 }
 
 // Task returns TaskResolver implementation.
