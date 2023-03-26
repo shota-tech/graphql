@@ -161,7 +161,7 @@ func TestTodoRepository_Get(t *testing.T) {
 func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 	tests := map[string]struct {
 		setup     func(sqlmock.Sqlmock)
-		ids       []string
+		taskIDs   []string
 		want      []*model.Todo
 		assertErr assert.ErrorAssertionFunc
 	}{
@@ -176,7 +176,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 					WithArgs(args...).
 					WillReturnRows(rows)
 			},
-			ids: []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			taskIDs: []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want: []*model.Todo{
 				{ID: "cgf90odvqc7hkkh47tg0", Text: "todo1", Done: false, TaskID: "cg1m0bd1nm6u7kpjp15g"},
 				{ID: "cgf95atvqc7hriet4at0", Text: "todo2", Done: true, TaskID: "cg2j6hl1nm6ivqd084m0"},
@@ -192,7 +192,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 					WithArgs(args...).
 					WillReturnRows(rows)
 			},
-			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want:      []*model.Todo{},
 			assertErr: assert.NoError,
 		},
@@ -204,7 +204,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 					WithArgs(args...).
 					WillReturnError(assert.AnError)
 			},
-			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want:      nil,
 			assertErr: assert.Error,
 		},
@@ -219,7 +219,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 					WithArgs(args...).
 					WillReturnRows(rows)
 			},
-			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want:      nil,
 			assertErr: assert.Error,
 		},
@@ -235,7 +235,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 					WithArgs(args...).
 					WillReturnRows(rows)
 			},
-			ids:       []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
+			taskIDs:   []string{"cg1m0bd1nm6u7kpjp15g", "cg2j6hl1nm6ivqd084m0"},
 			want:      nil,
 			assertErr: assert.Error,
 		},
@@ -251,7 +251,7 @@ func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 			}
 			// test
 			sut := repository.NewTodoRepository(db)
-			got, err := sut.ListByTaskIDs(context.Background(), tt.ids)
+			got, err := sut.ListByTaskIDs(context.Background(), tt.taskIDs)
 			assert.Equal(t, tt.want, got)
 			tt.assertErr(t, err)
 			assert.NoError(t, mock.ExpectationsWereMet())
