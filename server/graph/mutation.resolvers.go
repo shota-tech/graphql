@@ -8,18 +8,16 @@ import (
 	"context"
 	"errors"
 
-	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
-	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/rs/xid"
 	"github.com/shota-tech/graphql/server/graph/model"
-	"github.com/shota-tech/graphql/server/middleware"
+	"github.com/shota-tech/graphql/server/middleware/auth"
 )
 
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteUser) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeWriteUser) {
 		return nil, errors.New("invalid scope")
 	}
 	user := &model.User{
@@ -34,9 +32,9 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.Task, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	task := &model.Task{
@@ -53,9 +51,9 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 
 // UpdateTask is the resolver for the updateTask field.
 func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTaskInput) (*model.Task, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	task, err := r.TaskRepository.Get(ctx, input.ID)
@@ -76,9 +74,9 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTas
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTodoInput) (*model.Todo, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	todo := &model.Todo{
@@ -95,9 +93,9 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.CreateTod
 
 // UpdateTodo is the resolver for the updateTodo field.
 func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTodoInput) (*model.Todo, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeWriteTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	todo, err := r.TodoRepository.Get(ctx, input.ID)

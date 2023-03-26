@@ -8,17 +8,15 @@ import (
 	"context"
 	"errors"
 
-	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
-	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/shota-tech/graphql/server/graph/model"
-	"github.com/shota-tech/graphql/server/middleware"
+	"github.com/shota-tech/graphql/server/middleware/auth"
 )
 
 // User is the resolver for the user field.
 func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadUser) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadUser) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.UserRepository.Get(ctx, obj.UserID)
@@ -26,9 +24,9 @@ func (r *taskResolver) User(ctx context.Context, obj *model.Task) (*model.User, 
 
 // Todos is the resolver for the todos field.
 func (r *taskResolver) Todos(ctx context.Context, obj *model.Task) ([]*model.Todo, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	thunk := r.Loaders.TodoLoaderByTaskID.Load(ctx, obj.ID)
@@ -37,9 +35,9 @@ func (r *taskResolver) Todos(ctx context.Context, obj *model.Task) ([]*model.Tod
 
 // Task is the resolver for the task field.
 func (r *todoResolver) Task(ctx context.Context, obj *model.Todo) (*model.Task, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.TaskRepository.Get(ctx, obj.TaskID)
@@ -47,9 +45,9 @@ func (r *todoResolver) Task(ctx context.Context, obj *model.Todo) (*model.Task, 
 
 // Tasks is the resolver for the tasks field.
 func (r *userResolver) Tasks(ctx context.Context, obj *model.User) ([]*model.Task, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.TaskRepository.ListByUserID(ctx, obj.ID)

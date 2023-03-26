@@ -1,4 +1,4 @@
-package middleware
+package auth
 
 import (
 	"context"
@@ -77,4 +77,8 @@ func EnsureValidToken() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return middleware.CheckJWT(next)
 	}
+}
+
+func TokenFromContext(ctx context.Context) *validator.ValidatedClaims {
+	return ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
 }

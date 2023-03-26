@@ -8,17 +8,15 @@ import (
 	"context"
 	"errors"
 
-	jwtMiddleware "github.com/auth0/go-jwt-middleware/v2"
-	"github.com/auth0/go-jwt-middleware/v2/validator"
 	"github.com/shota-tech/graphql/server/graph/model"
-	"github.com/shota-tech/graphql/server/middleware"
+	"github.com/shota-tech/graphql/server/middleware/auth"
 )
 
 // FetchUser is the resolver for the fetchUser field.
 func (r *queryResolver) FetchUser(ctx context.Context) (*model.User, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadUser) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadUser) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.UserRepository.Get(ctx, token.RegisteredClaims.Subject)
@@ -26,9 +24,9 @@ func (r *queryResolver) FetchUser(ctx context.Context) (*model.User, error) {
 
 // FetchTasks is the resolver for the fetchTasks field.
 func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
-	token := ctx.Value(jwtMiddleware.ContextKey{}).(*validator.ValidatedClaims)
-	claims := token.CustomClaims.(*middleware.CustomClaims)
-	if !claims.HasScope(middleware.ScopeReadTasks) {
+	token := auth.TokenFromContext(ctx)
+	claims := token.CustomClaims.(*auth.CustomClaims)
+	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
 	return r.TaskRepository.ListByUserID(ctx, token.RegisteredClaims.Subject)
