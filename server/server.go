@@ -1,5 +1,8 @@
 package main
 
+//go:generate gqlgen generate
+//go:generate sqlboiler mysql
+
 import (
 	"database/sql"
 	"log"
