@@ -57,7 +57,8 @@ func (r *TodoRepository) ListByTaskIDs(ctx context.Context, taskIDs []string) ([
 	for i, taskID := range taskIDs {
 		args[i] = taskID
 	}
-	query := "SELECT id, text, done, task_id FROM todos WHERE task_id IN (?" + strings.Repeat(",?", len(taskIDs)-1) + ");"
+	query := "SELECT id, text, done, task_id FROM todos " +
+		"WHERE task_id IN (?" + strings.Repeat(",?", len(taskIDs)-1) + ");"
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get records: %w", err)
