@@ -7,6 +7,7 @@ A Kanban board created for learning GraphQL.
 - How to define GraphQL schema.
 - How to implement GraphQL server using gqlgen.
 - How to implement GraphQL client using urql.
+- How to solve the N+1 problem in GraphQL using dataloader.
 - How to authenticate and authorize using Auth0.
 - How to use Github Actions.
 - How to implement drag and drop using dnd kit.
@@ -15,6 +16,8 @@ A Kanban board created for learning GraphQL.
 - https://gqlgen.com/getting-started/
 - https://formidable.com/open-source/urql/docs/basics/react-preact/
 - https://auth0.com/docs/quickstart/backend/golang/01-authorization
+- https://pkg.go.dev/github.com/graph-gophers/dataloader/v7
+- https://gqlgen.com/reference/dataloaders/
 - https://auth0.com/docs/quickstart/spa/react/01-login
 - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 - https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
