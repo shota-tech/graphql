@@ -19,7 +19,8 @@ func (r *queryResolver) FetchUser(ctx context.Context) (*model.User, error) {
 	if !claims.HasScope(auth.ScopeReadUser) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.UserRepository.Get(ctx, token.RegisteredClaims.Subject)
+	thunk := r.Loaders.UserLoader.Load(ctx, token.RegisteredClaims.Subject)
+	return thunk()
 }
 
 // FetchTasks is the resolver for the fetchTasks field.
@@ -29,7 +30,8 @@ func (r *queryResolver) FetchTasks(ctx context.Context) ([]*model.Task, error) {
 	if !claims.HasScope(auth.ScopeReadTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	return r.TaskRepository.ListByUserID(ctx, token.RegisteredClaims.Subject)
+	thunk := r.Loaders.TaskLoaderByUserID.Load(ctx, token.RegisteredClaims.Subject)
+	return thunk()
 }
 
 // Query returns QueryResolver implementation.
