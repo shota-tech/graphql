@@ -56,7 +56,8 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, input model.UpdateTas
 	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	task, err := r.TaskRepository.Get(ctx, input.ID)
+	thunk := r.Loaders.TaskLoader.Load(ctx, input.ID)
+	task, err := thunk()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,8 @@ func (r *mutationResolver) UpdateTodo(ctx context.Context, input model.UpdateTod
 	if !claims.HasScope(auth.ScopeWriteTasks) {
 		return nil, errors.New("invalid scope")
 	}
-	todo, err := r.TodoRepository.Get(ctx, input.ID)
+	thunk := r.Loaders.TodoLoader.Load(ctx, input.ID)
+	todo, err := thunk()
 	if err != nil {
 		return nil, err
 	}
