@@ -38,7 +38,7 @@ func (l *UserLoader) BulkGet(ctx context.Context, ids []string) []*dataloader.Re
 		if ok {
 			results[i] = &dataloader.Result[*model.User]{Data: user}
 		} else {
-			results[i] = &dataloader.Result[*model.User]{Error: fmt.Errorf("task not found: %s", key)}
+			results[i] = &dataloader.Result[*model.User]{Error: fmt.Errorf("user not found: %s", key)}
 		}
 	}
 	return results
