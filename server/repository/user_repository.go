@@ -14,7 +14,6 @@ import (
 type (
 	IUserRepository interface {
 		Store(context.Context, *model.User) error
-		Get(context.Context, string) (*model.User, error)
 		List(context.Context, []string) ([]*model.User, error)
 	}
 
@@ -39,20 +38,6 @@ func (r *UserRepository) Store(ctx context.Context, user *model.User) error {
 		return fmt.Errorf("failed to upsert record: %w", err)
 	}
 	return nil
-}
-
-func (r *UserRepository) Get(ctx context.Context, id string) (*model.User, error) {
-	row, err := models.Users(models.UserWhere.ID.EQ(id)).One(ctx, r.db)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("record not found")
-		}
-		return nil, fmt.Errorf("failed to get record: %w", err)
-	}
-	return &model.User{
-		ID:   row.ID,
-		Name: row.Name,
-	}, nil
 }
 
 func (r *UserRepository) List(ctx context.Context, ids []string) ([]*model.User, error) {
