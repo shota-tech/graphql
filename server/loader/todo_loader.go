@@ -2,6 +2,7 @@ package loader
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/graph-gophers/dataloader/v7"
@@ -17,6 +18,30 @@ func NewTodoLoader(repository repository.ITodoRepository) *TodoLoader {
 	return &TodoLoader{
 		repository: repository,
 	}
+}
+
+func (l *TodoLoader) BulkGet(ctx context.Context, ids []string) []*dataloader.Result[*model.Todo] {
+	todo, err := l.repository.List(ctx, ids)
+	if err != nil {
+		log.Printf("failed to list todos: %v", err)
+		return nil
+	}
+
+	todoByID := make(map[string]*model.Todo, len(ids))
+	for _, todo := range todo {
+		todoByID[todo.ID] = todo
+	}
+
+	results := make([]*dataloader.Result[*model.Todo], len(ids))
+	for i, key := range ids {
+		todo, ok := todoByID[key]
+		if ok {
+			results[i] = &dataloader.Result[*model.Todo]{Data: todo}
+		} else {
+			results[i] = &dataloader.Result[*model.Todo]{Error: fmt.Errorf("todo not found: %s", key)}
+		}
+	}
+	return results
 }
 
 func (l *TodoLoader) BulkGetByTaskIDs(ctx context.Context, taskIDs []string) []*dataloader.Result[[]*model.Todo] {

@@ -8,6 +8,7 @@ import (
 type Loaders struct {
 	UserLoader         dataloader.Interface[string, *model.User]
 	TaskLoader         dataloader.Interface[string, *model.Task]
+	TodoLoader         dataloader.Interface[string, *model.Todo]
 	TaskLoaderByUserID dataloader.Interface[string, []*model.Task]
 	TodoLoaderByTaskID dataloader.Interface[string, []*model.Todo]
 }
@@ -28,6 +29,12 @@ func NewLoaders(
 			taskLoader.BulkGet,
 			dataloader.WithCache[string, *model.Task](
 				&dataloader.NoCache[string, *model.Task]{},
+			),
+		),
+		TodoLoader: dataloader.NewBatchedLoader(
+			todoLoader.BulkGet,
+			dataloader.WithCache[string, *model.Todo](
+				&dataloader.NoCache[string, *model.Todo]{},
 			),
 		),
 		TaskLoaderByUserID: dataloader.NewBatchedLoader(

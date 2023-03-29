@@ -146,6 +146,76 @@ func TestTodoRepository_Get(t *testing.T) {
 	}
 }
 
+func TestTodoRepository_List(t *testing.T) {
+	tests := map[string]struct {
+		setup     func(sqlmock.Sqlmock)
+		ids       []string
+		want      []*model.Todo
+		assertErr assert.ErrorAssertionFunc
+	}{
+		"happy path": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` IN (?,?));"
+				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"}).
+					AddRow("cgf90odvqc7hkkh47tg0", "todo1", false, "cg1m0bd1nm6u7kpjp15g", time.Now(), time.Now()).
+					AddRow("cgf95atvqc7hriet4at0", "todo2", true, "cg2j6hl1nm6ivqd084m0", time.Now(), time.Now())
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids: []string{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"},
+			want: []*model.Todo{
+				{ID: "cgf90odvqc7hkkh47tg0", Text: "todo1", Done: false, TaskID: "cg1m0bd1nm6u7kpjp15g"},
+				{ID: "cgf95atvqc7hriet4at0", Text: "todo2", Done: true, TaskID: "cg2j6hl1nm6ivqd084m0"},
+			},
+			assertErr: assert.NoError,
+		},
+		"0 records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` IN (?,?));"
+				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"}
+				rows := sqlmock.NewRows([]string{"id", "text", "done", "task_id", "created_at", "updated_at"})
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnRows(rows)
+			},
+			ids:       []string{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"},
+			want:      []*model.Todo{},
+			assertErr: assert.NoError,
+		},
+		"failed to get records": {
+			setup: func(mock sqlmock.Sqlmock) {
+				query := "SELECT `todos`.* FROM `todos` WHERE (`todos`.`id` IN (?,?));"
+				args := []driver.Value{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"}
+				mock.ExpectQuery(regexp.QuoteMeta(query)).
+					WithArgs(args...).
+					WillReturnError(assert.AnError)
+			},
+			ids:       []string{"cgf90odvqc7hkkh47tg0", "cgf95atvqc7hriet4at0"},
+			want:      nil,
+			assertErr: assert.Error,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			// setup sqlmock
+			db, mock, err := sqlmock.New()
+			require.NoError(t, err)
+			defer db.Close()
+			if tt.setup != nil {
+				tt.setup(mock)
+			}
+			// test
+			sut := repository.NewTodoRepository(db)
+			got, err := sut.List(context.Background(), tt.ids)
+			assert.Equal(t, tt.want, got)
+			tt.assertErr(t, err)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	}
+}
+
 func TestTodoRepository_ListByTaskIDs(t *testing.T) {
 	tests := map[string]struct {
 		setup     func(sqlmock.Sqlmock)

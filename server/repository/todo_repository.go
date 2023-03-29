@@ -15,6 +15,7 @@ type (
 	ITodoRepository interface {
 		Store(context.Context, *model.Todo) error
 		Get(context.Context, string) (*model.Todo, error)
+		List(context.Context, []string) ([]*model.Todo, error)
 		ListByTaskIDs(context.Context, []string) ([]*model.Todo, error)
 	}
 
@@ -57,6 +58,23 @@ func (r *TodoRepository) Get(ctx context.Context, id string) (*model.Todo, error
 		Done:   row.Done,
 		TaskID: row.TaskID,
 	}, nil
+}
+
+func (r *TodoRepository) List(ctx context.Context, ids []string) ([]*model.Todo, error) {
+	rows, err := models.Todos(models.TodoWhere.ID.IN(ids)).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get records: %w", err)
+	}
+	todos := make([]*model.Todo, len(rows))
+	for i, row := range rows {
+		todos[i] = &model.Todo{
+			ID:     row.ID,
+			Text:   row.Text,
+			Done:   row.Done,
+			TaskID: row.TaskID,
+		}
+	}
+	return todos, nil
 }
 
 func (r *TodoRepository) ListByTaskIDs(ctx context.Context, taskIDs []string) ([]*model.Todo, error) {
